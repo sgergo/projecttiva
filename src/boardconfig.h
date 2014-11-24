@@ -1,0 +1,16 @@
+#ifndef BOARDCONFIG_H
+#define BOARDCONFIG_H
+
+#define CONSOLEUARTPERIPHERIAL				SYSCTL_PERIPH_UART0
+#define CONSOLEUARTPINPERIPHERIAL			SYSCTL_PERIPH_GPIOA
+#define CONSOLEUARTPERIPHERIALBASE			UART0_BASE
+#define CONSOLEUARTPINPERIPHERIALBASE		GPIO_PORTA_BASE
+#define CONSOLEUARTRXPINTYPE				GPIO_PA0_U0RX
+#define CONSOLEUARTTXPINTYPE				GPIO_PA1_U0TX
+#define CONSOLEUARTRXPIN					GPIO_PIN_0
+#define CONSOLEUARTTXPIN 					GPIO_PIN_1
+
+#define UART_BUFFERED // Enable UART buffered mode in uartstdio library
+#define UART_TX_BUFFER_SIZE 				128 // Override default UART buffer size in uartstdio library
+#define STDINBUFFERSIZE						128	// Static stdin buffer size in console_uart_process function
+#endif
