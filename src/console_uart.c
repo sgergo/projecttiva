@@ -18,7 +18,7 @@
 
 void console_uart_process(char *stdin_buffer, uint32_t *bytes_in) {	
 	int f = UARTPeek('\r');
-	int i;
+    
 	if (f > -1) {
 			*bytes_in = UARTRxBytesAvail();
 			UARTgets(stdin_buffer, *bytes_in);

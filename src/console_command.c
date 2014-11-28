@@ -6,7 +6,7 @@
 #include "console_command.h"
 #include "cmdline.h"
 #include "uartstdio.h"
-#include "board.h"
+//#include "board.h"
 
 
 
@@ -27,7 +27,6 @@ static int console_command_help(int argc, char *argv[]) {
 
 void console_command_execute(char *commandline_received) {
 	int32_t ret;
-	board_toggle_led(RED);
 	ret = CmdLineProcess(commandline_received);
 	if (ret) console_printtext("Error code: %d\n", ret); // If CmdLineProcess returns with a non-zero something went bad
 }

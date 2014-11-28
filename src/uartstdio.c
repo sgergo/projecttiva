@@ -37,8 +37,6 @@
 #include "driverlib/uart.h"
 #include "uartstdio.h"
 
-#include "board.h"
-
 //*****************************************************************************
 //
 //! \addtogroup uartstdio_api
@@ -1622,7 +1620,6 @@ UARTStdioIntHandler(void)
                         // terminal.
                         //
                         UARTwrite("\b \b", 3);
-                        board_toggle_led(BLUE);
                         //
                         // Decrement the number of characters in the buffer.
                         //

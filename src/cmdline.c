@@ -33,9 +33,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include "cmdline.h"
-#include "board.h"
-
-//int strcmp(const char * s1, const char * s2);
 
 //*****************************************************************************
 //
@@ -165,7 +162,6 @@ CmdLineProcess(char *pcCmdLine)
         //
         while(psCmdEntry->pcCmd)
         {
-            board_toggle_led(BLUE);
             //
             // If this command entry command string matches argv[0], then call
             // the function for this command, passing the command line
