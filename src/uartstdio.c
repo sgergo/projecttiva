@@ -35,7 +35,9 @@
 #include "driverlib/rom_map.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
-#include "utils/uartstdio.h"
+#include "uartstdio.h"
+
+#include "board.h"
 
 //*****************************************************************************
 //
@@ -1605,9 +1607,10 @@ UARTStdioIntHandler(void)
                 //
                 // Handle backspace by erasing the last character in the
                 // buffer.
-                //
+                //              
                 if(cChar == '\b')
                 {
+                    //UARTprintf("RX FIFO: %d", RX_BUFFER_EMPTY);
                     //
                     // If there are any characters already in the buffer, then
                     // delete the last.
@@ -1619,7 +1622,7 @@ UARTStdioIntHandler(void)
                         // terminal.
                         //
                         UARTwrite("\b \b", 3);
-
+                        board_toggle_led(BLUE);
                         //
                         // Decrement the number of characters in the buffer.
                         //

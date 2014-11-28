@@ -18,17 +18,24 @@ INCLUDES = -IInclude
 # OUTDIR: directory to use for output
 OUTDIR = build
 # TIVAWARE_PATH: path to tivaware folder
-TIVAWARE_PATH = /home/sg/ti/tivaware
+TIVAWARE_PATH = /home/gsantha/ti/tivaware
 
 # LD_SCRIPT: linker script
 LD_SCRIPT = $(MCU).ld
 
+#
+# Get the location of libc.a from the GCC front-end.
+#
+LIBC:=${shell arm-none-eabi-gcc ${CFLAGS} -print-file-name=libc.a}
+
 # define flags
-CFLAGS = -g -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+# define flags
+COREFLAGS = -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+CFLAGS = -g $(COREFLAGS)
 CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall
 CFLAGS += -pedantic -DPART_$(MCU) -c -I$(TIVAWARE_PATH)
 CFLAGS += -DTARGET_IS_BLIZZARD_RA1
-LDFLAGS = -T $(LD_SCRIPT) --entry ResetISR --gc-sections
+LDFLAGS = $(COREFLAGS) -T$(LD_SCRIPT) -Wl,--entry=ResetISR,--gc-sections
 
 #######################################
 # end of user configuration
@@ -38,7 +45,7 @@ LDFLAGS = -T $(LD_SCRIPT) --entry ResetISR --gc-sections
 # binaries
 #######################################
 CC = arm-none-eabi-gcc
-LD = arm-none-eabi-ld
+LD = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
 RM      = rm -f
 MKDIR	= mkdir -p

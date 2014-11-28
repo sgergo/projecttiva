@@ -33,6 +33,10 @@ your PATH.
 //saját példa
 PATH=$PATH:/opt/gcc-arm-none-eabi-4_8-2014q3/bin
 
+64 bites környezetben ezekre is szükség lesz:
+
+sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0
+
 The TivaWare package contains all of the header files and drivers for
 Tiva parts. Grab the file *SW-TM4C-1.1.exe* from
 [here](http://software-dl.ti.com/tiva-c/SW-TM4C/latest/index_FDS.html) and unzip it into a directory

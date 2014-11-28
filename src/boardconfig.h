@@ -10,7 +10,23 @@
 #define CONSOLEUARTRXPIN					GPIO_PIN_0
 #define CONSOLEUARTTXPIN 					GPIO_PIN_1
 
-#define UART_BUFFERED // Enable UART buffered mode in uartstdio library
-#define UART_TX_BUFFER_SIZE 				128 // Override default UART buffer size in uartstdio library
-#define STDINBUFFERSIZE						128	// Static stdin buffer size in console_uart_process function
+#define LED_1_PINPERIPHERIAL				SYSCTL_PERIPH_GPIOF
+#define LED_2_PINPERIPHERIAL				SYSCTL_PERIPH_GPIOF
+#define LED_3_PINPERIPHERIAL				SYSCTL_PERIPH_GPIOF
+#define LED_ALL_PINPERIPHERIAL				SYSCTL_PERIPH_GPIOF
+#define LED_1_PORTBASE						GPIO_PORTF_BASE
+#define LED_2_PORTBASE						GPIO_PORTF_BASE
+#define LED_3_PORTBASE						GPIO_PORTF_BASE
+#define LED_ALL_PORTBASE					GPIO_PORTF_BASE
+#define LED_RED_PORTBASE					LED_1_PORTBASE
+#define LED_BLUE_PORTBASE					LED_2_PORTBASE
+#define LED_GREEN_PORTBASE					LED_3_PORTBASE
+#define LED_1_PIN 							GPIO_PIN_1
+#define LED_2_PIN 							GPIO_PIN_2
+#define LED_3_PIN 							GPIO_PIN_3
+#define LED_RED								LED_1_PIN
+#define LED_BLUE 							LED_2_PIN
+#define LED_GREEN 							LED_3_PIN
+
+
 #endif

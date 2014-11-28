@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include "inc/hw_nvic.h"
 #include "inc/hw_types.h"
+#include "uartstdio.h"
 
 //*****************************************************************************
 //
@@ -42,7 +43,7 @@ static void IntDefaultHandler(void);
 // External declarations for the interrupt handlers used by the application.
 //
 //*****************************************************************************
-extern void UARTStdioIntHandler(void);
+//extern void UARTStdioIntHandler(void);
 
 //*****************************************************************************
 //
@@ -89,7 +90,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // GPIO Port C
     IntDefaultHandler,                      // GPIO Port D
     IntDefaultHandler,                      // GPIO Port E
-    UARTStdioIntHandler, //IntDefaultHandler,                      // UART0 Rx and Tx
+    UARTStdioIntHandler,                      // UART0 Rx and Tx
     IntDefaultHandler,                      // UART1 Rx and Tx
     IntDefaultHandler,                      // SSI0 Rx and Tx
     IntDefaultHandler,                      // I2C0 Master and Slave
