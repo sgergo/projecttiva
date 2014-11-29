@@ -1,7 +1,3 @@
-
-#include "board.h"
-#include "boardconfig.h"
-
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -14,7 +10,10 @@
 #include "driverlib/rom.h"
 #include "driverlib/sysctl.h"
 
+#include "board.h"
+#include "boardconfig.h"
 #include "console_uart.h"
+#include "board_spi.h"
 
 static void board_configure_led(void) {
 	ROM_SysCtlPeripheralEnable(LED_ALL_PINPERIPHERIAL);
@@ -29,6 +28,7 @@ void board_init(void) {
 
 	board_configure_led();
 	console_uart_init(DEFAULT_BAUDRATE);
+	board_spi_init();
 }
 
 void board_toggle_led(led_t led) {
@@ -52,7 +52,6 @@ void board_toggle_led(led_t led) {
 			port ^=LED_GREEN;
 			ROM_GPIOPinWrite(LED_GREEN_PORTBASE, LED_GREEN, port);
 			break;
-
 		default:
 			break;
 	}
