@@ -25,6 +25,13 @@ static int console_command_help(int argc, char *argv[]) {
     return(0);
 }
 
+static int console_command_snop(int argc, char *argv[]) {
+    uint8_t status;
+    status = board_spi_send(0x3d);
+    UARTprintf("Answered: 0x%02x\n", status);
+    return(0);
+}
+
 void console_command_execute(char *commandline_received) {
 	int32_t ret;
 	ret = CmdLineProcess(commandline_received);
@@ -37,5 +44,6 @@ void console_command_execute(char *commandline_received) {
 // Command table entries - fill it!
 tCmdLineEntry g_psCmdTable[] = {
     { "help", console_command_help,   "Display list of commands" },
+    { "snop", console_command_snop,   "Get status byte from CC1101" },
     { 0, 0, 0 } // Don't touch it, last entry must be a terminating NULL entry
 };
