@@ -38,5 +38,5 @@ void console_uart_init(uint32_t baudrate) {
     ROM_UARTConfigSetExpClk(CONSOLEUARTPINPERIPHERIALBASE, ROM_SysCtlClockGet(), baudrate,
                             (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
                              UART_CONFIG_PAR_NONE));
-    UARTStdioConfig(0, baudrate, 16000000); // Initialize the UART for console I/O.
+    UARTStdioConfig(0, baudrate, 50000000); // Initialize the UART for console I/O.
 }

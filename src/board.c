@@ -14,6 +14,9 @@
 #include "boardconfig.h"
 #include "console_uart.h"
 #include "board_spi.h"
+#include "cc1101.h"
+
+extern cc1101_interface_t cc1101_interface;
 
 static void board_configure_led(void) {
 	ROM_SysCtlPeripheralEnable(LED_ALL_PINPERIPHERIAL);
@@ -23,12 +26,16 @@ static void board_configure_led(void) {
 
 void board_init(void) {
 
-	ROM_SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
-                       SYSCTL_XTAL_16MHZ);
-
+	// ROM_SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+ //                       SYSCTL_XTAL_16MHZ);
+	ROM_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |
+                       SYSCTL_OSC_MAIN);
 	board_configure_led();
 	console_uart_init(DEFAULT_BAUDRATE);
 	board_spi_init();
+	cc1101_interface.interface_spi_low = board_spi_cspin_low;
+	cc1101_interface.interface_spi_send = board_spi_send;
+	cc1101_interface.interface_spi_high = board_spi_cspin_high;
 }
 
 void board_toggle_led(led_t led) {
