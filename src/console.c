@@ -10,9 +10,11 @@
 
 #include "uartstdio.h"
 
+extern uint8_t volatile console_command_verbosity_level;
 
 void console_init(void) {
 	console_uart_init(DEFAULT_BAUDRATE);
+	console_command_verbosity_level = VERBOSITY_ALL; // Set default verbosity: we want to see all replies and error messages 
 }
 
 void console_printtext(const char *format , ...) {

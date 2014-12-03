@@ -17,6 +17,8 @@
 #include "cc1101.h"
 
 extern cc1101_interface_t cc1101_interface;
+uint32_t delayloopspermicrosecond;
+uint32_t delayloopspermillisecond;
 
 static void board_configure_led(void) {
 	ROM_SysCtlPeripheralEnable(LED_ALL_PINPERIPHERIAL);
@@ -24,18 +26,38 @@ static void board_configure_led(void) {
 	ROM_GPIOPinWrite(LED_ALL_PORTBASE, LED_RED|LED_GREEN|LED_BLUE, 0); // Switch off all LEDs
 }
 
-void board_init(void) {
+static void board_delay_us (uint32_t delay) {
+	ROM_SysCtlDelay(delayloopspermicrosecond * delay);
+}
 
-	// ROM_SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
- //                       SYSCTL_XTAL_16MHZ);
-	ROM_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |
-                       SYSCTL_OSC_MAIN);
+static void board_delay_ms (uint32_t delay) {
+	ROM_SysCtlDelay(delayloopspermillisecond * delay);
+}
+
+void board_init(void) {
+	uint32_t clockfreq;
+	ROM_SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+                       SYSCTL_XTAL_16MHZ);
+	// ROM_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |
+ //                       SYSCTL_OSC_MAIN);
+	clockfreq = ROM_SysCtlClockGet();
+	if (clockfreq > 3E6) {
+		delayloopspermicrosecond = (ROM_SysCtlClockGet() / (uint32_t)1e6) / 3;
+		delayloopspermillisecond = (ROM_SysCtlClockGet() / (uint32_t)1e3) / 3;
+	} else {
+		//TODO: assert
+	}
+
 	board_configure_led();
 	console_uart_init(DEFAULT_BAUDRATE);
 	board_spi_init();
-	cc1101_interface.interface_spi_low = board_spi_cspin_low;
-	cc1101_interface.interface_spi_send = board_spi_send;
-	cc1101_interface.interface_spi_high = board_spi_cspin_high;
+
+	cc1101_interface.spi_low = board_spi_cspin_low;
+	cc1101_interface.spi_write = board_spi_write;
+	cc1101_interface.spi_high = board_spi_cspin_high;
+	cc1101_interface.board_delay_us = board_delay_us;
+	cc1101_interface.board_delay_ms = board_delay_ms;	
+	cc1101_init(); 
 }
 
 void board_toggle_led(led_t led) {
@@ -63,3 +85,4 @@ void board_toggle_led(led_t led) {
 			break;
 	}
 }
+

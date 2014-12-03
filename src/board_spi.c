@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "board_spi.h"
 #include "boardconfig.h"
+
 #include "inc/hw_memmap.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pin_map.h"
@@ -58,7 +59,7 @@ void board_spi_init(void) {
     	;
 }
 
-uint8_t board_spi_send(uint8_t bytetosend) {
+uint8_t board_spi_sendbyte(uint8_t bytetosend) {
 	uint32_t rxbuf;
 #ifdef CUSTOM_CS_PIN
 	board_spi_cspin_low();
@@ -70,5 +71,16 @@ uint8_t board_spi_send(uint8_t bytetosend) {
 #ifdef CUSTOM_CS_PIN
 	board_spi_cspin_high();
 #endif
+    return rxbuf;
+}
+
+uint8_t board_spi_write(uint8_t bytetosend) {
+    uint32_t rxbuf;
+
+    ROM_SSIDataPut(SPIPERIPHERIALBASE, bytetosend);
+    while(ROM_SSIBusy(SPIPERIPHERIALBASE))
+        ;
+    ROM_SSIDataGet(SPIPERIPHERIALBASE, &rxbuf);
+
     return rxbuf;
 }
