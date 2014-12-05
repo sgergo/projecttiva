@@ -34,7 +34,7 @@ COREFLAGS = -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
 CFLAGS = -g $(COREFLAGS)
 CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall
 CFLAGS += -pedantic -DPART_$(MCU) -c -I$(TIVAWARE_PATH)
-CFLAGS += -DTARGET_IS_BLIZZARD_RA1
+CFLAGS += -DTARGET_IS_TM4C123_RB1
 LDFLAGS = $(COREFLAGS) -T$(LD_SCRIPT) -Wl,--entry=ResetISR,--gc-sections
 
 #######################################

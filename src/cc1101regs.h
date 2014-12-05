@@ -124,93 +124,52 @@
 #define CC1101_LQI_CRC_OK_BM                   0x80
 #define CC1101_LQI_EST_BM                      0x7F
 
-#ifdef POWERSAVINGCOMM
+//----------------------------------------------------------------------------------
+// Radio specific fields
+//----------------------------------------------------------------------------------
+#define CC1101_FIFO_SIZE                       64
+
+
+//----------------------------------------------------------------------------------
+// Initialization macro
+//----------------------------------------------------------------------------------
+
 #define cc1101_init_regs() \
-	cc1101_write_reg(CC1101_IOCFG2, 0x00); /* GDO2 - threshold interrupt - see cc1101.pdf page 62 */ \
-	cc1101_write_reg(CC1101_IOCFG1, 0x2e); \
-	cc1101_write_reg(CC1101_IOCFG0, 0x06); /* GDO0 - packet interrupt */ \
-	cc1101_write_reg(CC1101_FIFOTHR, 7); /* See cc1101.pdf page 56 */ \
-	cc1101_write_reg(CC1101_SYNC1, 0xd3); \
-	cc1101_write_reg(CC1101_SYNC0, 0x91); \
-	cc1101_write_reg(CC1101_PKTLEN, sizeof(lowerlayer_signal_packet_t)); /* We are expecting an RTS packet first */ \
-	cc1101_write_reg(CC1101_PKTCTRL1, 0x06); /* 0x06 - default, 0x04 - no address matching */ \
-	cc1101_write_reg(CC1101_PKTCTRL0, 0x44); /* 0x44 - fixed packet length, 0x45 - variable pl, 0x46 - infinite pl */ \
-	cc1101_write_reg(CC1101_ADDR, 0xff); \
-	cc1101_write_reg(CC1101_CHANNR, comm_basechannel*2); \
-	cc1101_write_reg(CC1101_FSCTRL1, 0x06); \
-	cc1101_write_reg(CC1101_FSCTRL0, 0x00); \
-	cc1101_write_reg(CC1101_FREQ2, 0x10); \
-	cc1101_write_reg(CC1101_FREQ1, 0xa8); /* 2.4k: 0xb1 10k: a8 */ \
-	cc1101_write_reg(CC1101_FREQ0, 0x5f); /* 0x5f for ch0: 433.1MHz, wake ch (ch1): 433.19MHz */ \
-	cc1101_write_reg(CC1101_MDMCFG4, 0xd8); /* 2.4k: 0xf6 10k: 0xd8*/ \
-	cc1101_write_reg(CC1101_MDMCFG3, 0x93); /* 2.4k: 0x83 10k: 0x93 */\
-	cc1101_write_reg(CC1101_MDMCFG2, 0x13); /* 2.4k: 0x13 10k: 0x13 */\
-	cc1101_write_reg(CC1101_MDMCFG1, 0xc1); /* 75k: 0x21 2.4k: 0x22 FEC_2.4k: 0xc1 10k_FEC: 0xc1 */ \
-	cc1101_write_reg(CC1101_MDMCFG0, 0xf8); /* 75k: 0x7a 2.4k: 0xf8 10k: 0xf8 */ \
-	cc1101_write_reg(CC1101_DEVIATN, 0x34); /* 2.4k: 0x15 10k: 0x34*/ \
-	cc1101_write_reg(CC1101_MCSM2, 0x1); /* DIFF: Only check for a sync word for a short time (this is the max, at 0x2 it's not always waking up) */ \
-	cc1101_write_reg(CC1101_MCSM1, 0x30); \
-	cc1101_write_reg(CC1101_MCSM0, 0x04); /* No auto calibration */ \
-	cc1101_write_reg(CC1101_FOCCFG, 0x16); \
-	cc1101_write_reg(CC1101_BSCFG, 0x6c); \
-	cc1101_write_reg(CC1101_AGCCTRL2, 0x47); /* This is important for RSSI sensing, 2.4k: 0x47 10k: 0x47*/ \
-	cc1101_write_reg(CC1101_AGCCTRL1, 0x40); /* 2.4k: 0x40 10k: 0x40 */\
-	cc1101_write_reg(CC1101_AGCCTRL0, 0x91); /* 2.4k: 0x91 10k: 0x91 */ \
-	cc1101_write_reg(CC1101_WOREVT1, 0x07); /* DIFF: Wake up every 3.6s: cc1101.pdf p87 (750/26000000)*3900*(2^5)=3.6 -> 3900/2 */ \
-	cc1101_write_reg(CC1101_WOREVT0, 0x3a); \
-	cc1101_write_reg(CC1101_WORCTRL, 0xf9); \
-	cc1101_write_reg(CC1101_FREND1, 0x56); \
-	cc1101_write_reg(CC1101_FREND0, 0x10); \
-	cc1101_write_reg(CC1101_FSCAL3, 0xe9); \
-	cc1101_write_reg(CC1101_FSCAL2, 0x2a); \
-	cc1101_write_reg(CC1101_FSCAL1, 0x00); \
-	cc1101_write_reg(CC1101_FSCAL0, 0x1f); \
-	cc1101_write_reg(CC1101_RCCTRL1, 0x41); \
-	cc1101_write_reg(CC1101_RCCTRL0, 0x00);
-#else /* ifdef POWERSAVINGCOMM */
-#define cc1101_init_regs() \
-	cc1101_write_reg(CC1101_IOCFG2, 0x00); /* GDO2 - threshold interrupt - see cc1101.pdf page 62 */ \
-	cc1101_write_reg(CC1101_IOCFG1, 0x2e); \
-	cc1101_write_reg(CC1101_IOCFG0, 0x06); /* GDO0 - packet interrupt */ \
-	cc1101_write_reg(CC1101_FIFOTHR, 7); /* See cc1101.pdf page 56 */ \
-	cc1101_write_reg(CC1101_SYNC1, 0xd3); \
-	cc1101_write_reg(CC1101_SYNC0, 0x91); \
-	cc1101_write_reg(CC1101_PKTLEN, sizeof(lowerlayer_signal_packet_t)); /* We are expecting an RTS packet first */ \
-	cc1101_write_reg(CC1101_PKTCTRL1, 0x06); /* 0x06 - default, 0x04 - no address matching */ \
-	cc1101_write_reg(CC1101_PKTCTRL0, 0x44); /* 0x44 - fixed packet length, 0x45 variable pl, 0x46 - infinite pl */ \
-	cc1101_write_reg(CC1101_ADDR, 0xff); \
-	cc1101_write_reg(CC1101_CHANNR, comm_basechannel*2); \
-	cc1101_write_reg(CC1101_FSCTRL1, 0x06); \
-	cc1101_write_reg(CC1101_FSCTRL0, 0x00); \
-	cc1101_write_reg(CC1101_FREQ2, 0x10); /* 433mhz: 0x10 868mhz: 0x21 */ \
-	cc1101_write_reg(CC1101_FREQ1, 0xa8); /* 433mhz: 0xa8 868mhz: 0x62 2.4k: 0xb1 10k: a8 */\
-	cc1101_write_reg(CC1101_FREQ0, 0x5f); /* 433mhz: 0x5f 868mhz: 0x76 0x3b for 433.1 MHz */ \
-	cc1101_write_reg(CC1101_MDMCFG4, 0xd8); /* 2.4k: 0xf6 10k: 0xd8*/ \
-	cc1101_write_reg(CC1101_MDMCFG3, 0x93); /* 2.4k: 0x83 10k: 0x93 */\
-	cc1101_write_reg(CC1101_MDMCFG2, 0x13); /* 2.4k: 0x13 10k: 0x13 */\
-	cc1101_write_reg(CC1101_MDMCFG1, 0xc1); /* 75k: 0x21 2.4k: 0x22 FEC_2.4k: 0xc1 10k_FEC: 0xc1 */ \
-	cc1101_write_reg(CC1101_MDMCFG0, 0xf8); /* 75k: 0x7a 2.4k: 0xf8 10k: 0xf8 */ \
-	cc1101_write_reg(CC1101_DEVIATN, 0x34); /* 2.4k: 0x15 10k: 0x34*/ \
-	cc1101_write_reg(CC1101_MCSM2, 0x0); /* Only check for a sync word for a short time */ \
-	cc1101_write_reg(CC1101_MCSM2, 0x07); /* DIFF: Continuous RX needed if power saving is disabled */ \
-	cc1101_write_reg(CC1101_MCSM1, 0x30); \
-	cc1101_write_reg(CC1101_MCSM0, 0x04); /* No auto calibration */ \
-	cc1101_write_reg(CC1101_FOCCFG, 0x16); \
-	cc1101_write_reg(CC1101_BSCFG, 0x6c); \
-	cc1101_write_reg(CC1101_AGCCTRL2, 0x47); /* 433mhz: 0x47 868mhz: 0x43 This is important for RSSI sensing, 2.4k: 0x47 10k: 0x47*/ \
-	cc1101_write_reg(CC1101_AGCCTRL1, 0x40); /* 2.4k: 0x40 10k: 0x40 */\
-	cc1101_write_reg(CC1101_AGCCTRL0, 0x91); /* 2.4k: 0x91 10k: 0x91 */ \
-	cc1101_write_reg(CC1101_WOREVT1, 0xff); \
-	cc1101_write_reg(CC1101_WOREVT0, 0xff); \
-	cc1101_write_reg(CC1101_WORCTRL, 0xf9); \
-	cc1101_write_reg(CC1101_FREND1, 0x56); \
-	cc1101_write_reg(CC1101_FREND0, 0x10); \
-	cc1101_write_reg(CC1101_FSCAL3, 0xe9); \
-	cc1101_write_reg(CC1101_FSCAL2, 0x2a); \
-	cc1101_write_reg(CC1101_FSCAL1, 0x00); \
-	cc1101_write_reg(CC1101_FSCAL0, 0x1f); \
-	cc1101_write_reg(CC1101_RCCTRL1, 0x41); \
-	cc1101_write_reg(CC1101_RCCTRL0, 0x00);
-#endif /* ifdef POWERSAVINGCOMM */
+	cc1101_write_reg(CC1101_IOCFG2, 0x29);\
+  cc1101_write_reg(CC1101_IOCFG1, 0x2E);\
+	cc1101_write_reg(CC1101_IOCFG0, 0x06);\
+	cc1101_write_reg(CC1101_FIFOTHR, 0x47);\
+	cc1101_write_reg(CC1101_SYNC1, 0xD3);\
+	cc1101_write_reg(CC1101_SYNC0, 0x91);\
+	cc1101_write_reg(CC1101_PKTLEN, 0xFF);\
+	cc1101_write_reg(CC1101_PKTCTRL1, 0x00); /*no address check, no crc autoflush, no append status*/ \
+	cc1101_write_reg(CC1101_PKTCTRL0, 0x00); /*crc disabled TX/RX, fixed packet length*/\
+	cc1101_write_reg(CC1101_ADDR, 0x0D);\
+	cc1101_write_reg(CC1101_CHANNR, 0x00);\
+	cc1101_write_reg(CC1101_FSCTRL1, 0x06);\
+	cc1101_write_reg(CC1101_FSCTRL0, 0x00);\
+	cc1101_write_reg(CC1101_FREQ2, 0x21);\
+	cc1101_write_reg(CC1101_FREQ1, 0x62);\
+	cc1101_write_reg(CC1101_FREQ0, 0x76);\
+	cc1101_write_reg(CC1101_MDMCFG4, 0xC8);\
+	cc1101_write_reg(CC1101_MDMCFG3, 0x93);\
+	cc1101_write_reg(CC1101_MDMCFG2, 0x13);\
+	cc1101_write_reg(CC1101_MDMCFG1, 0x22);\
+	cc1101_write_reg(CC1101_MDMCFG0, 0xF8);\
+	cc1101_write_reg(CC1101_DEVIATN, 0x34);\
+	cc1101_write_reg(CC1101_MCSM2, 0x07);\
+	cc1101_write_reg(CC1101_MCSM1, 0x30);\
+	cc1101_write_reg(CC1101_MCSM0, 0x18); /*fs autocal from idle->rxtx*/ \
+	cc1101_write_reg(CC1101_FOCCFG, 0x16);\
+	cc1101_write_reg(CC1101_BSCFG, 0x6C);\
+	cc1101_write_reg(CC1101_AGCCTRL2, 0x43);\
+	cc1101_write_reg(CC1101_AGCCTRL1, 0x40);\
+	cc1101_write_reg(CC1101_AGCCTRL0, 0x91);\
+	cc1101_write_reg(CC1101_FREND1, 0x56);\
+	cc1101_write_reg(CC1101_FREND0, 0x10);\
+	cc1101_write_reg(CC1101_FSCAL3, 0xE9);\
+	cc1101_write_reg(CC1101_FSCAL2, 0x2A);\
+	cc1101_write_reg(CC1101_FSCAL1, 0x00);\
+	cc1101_write_reg(CC1101_FSCAL0, 0x1F);
 
 #endif

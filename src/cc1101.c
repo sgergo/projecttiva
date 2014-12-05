@@ -1,6 +1,18 @@
 #include <stdint.h>
+#include <stdbool.h>
+#include "types.h"
 #include "cc1101.h"
 #include "cc1101regs.h"
+#include "boardconfig.h"
+
+#include "inc/hw_types.h"
+#include "inc/hw_gpio.h"
+#include "inc/hw_memmap.h"
+
+#include "driverlib/gpio.h"
+#include "driverlib/pin_map.h"
+#include "driverlib/rom.h"
+#include "driverlib/rom_map.h"
 
 #include "board.h"
 
@@ -12,6 +24,18 @@ void cc1101_write_reg(uint8_t reg, uint8_t val) {
 	cc1101_interface.spi_write(reg);
 	cc1101_interface.spi_write(val);
 	cc1101_interface.spi_high();
+}
+
+static uint8_t cc1101_write_txfifo(uint8_t *packet, uint8_t from, packetsize_t packetsize) {
+	uint32_t i = 0;
+	cc1101_interface.spi_low();
+	cc1101_interface.spi_write(CC1101_TXFIFO | CC1101_WRITE_BURST);
+	while (packetsize--) {
+		cc1101_interface.spi_write(packet[from + i++]);
+	} 
+	cc1101_interface.spi_high();
+
+	return cc1101_read_status_reg(CC1101_TXBYTES);
 }
 
 uint8_t cc1101_read_reg(uint8_t reg) {
@@ -53,7 +77,7 @@ static void cc1101_reset(void) {
 
 void cc1101_init(void) {
 	cc1101_reset();
-	// TODO:
+	cc1101_init_regs(); // Macro with all the initial register values, see cc1101regs.h
 }
 
 void cc1101_update_state(void) {
@@ -72,4 +96,40 @@ void cc1101_update_state(void) {
 	}
 
 	cc1101_state_old = cc1101_state;	
+}
+
+void cc1101_sendpacket(uint8_t *packet, packetsize_t packetsize, flag_t waitforclearchannel) {
+	uint8_t previouspacketlength;
+	int32_t quotient, rem;
+	uint8_t from;
+	
+	// Store previous and update packet length register 
+	previouspacketlength = cc1101_read_reg(CC1101_PKTLEN);
+	cc1101_write_reg(CC1101_PKTLEN, packetsize);
+
+	if (packetsize < CC1101_FIFO_SIZE) {
+		if (cc1101_write_txfifo(packet, 0, packetsize) == packetsize)
+			/*TODO: STX*/;
+	} else {
+		// TX with FIFO refill necessary
+		// Calculate the number full TX FIFO chunks and the remainder
+		quotient = (int32_t)255 / packetsize;
+		rem = 255 % packetsize;
+		from = 0;
+		// Set GDIO2 interrupt to handle FIFO refills
+		cc1101_write_reg(CC1101_IOCFG2, 0x03); // Asserts when TXFIFO full, deasserts when < FIFO threshold
+		while (quotient) {
+			cc1101_write_txfifo(packet, from, packetsize);
+		}
+	}
+}
+
+void cc1101_GDIO0_ISR(void) {
+
+	cc1101_interface.gdio0_int_clear();
+}
+
+void cc1101_GDIO2_ISR(void) {
+
+	//cc1101_interface.gdio2_int_clear(GDO2PINPERIPHERIALBASE, GDO2PIN);
 }

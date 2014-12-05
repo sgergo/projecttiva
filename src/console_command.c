@@ -7,12 +7,16 @@
 
 #include "driverlib/rom.h"
 #include "driverlib/sysctl.h"
+#include "inc/hw_types.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_nvic.h"
 
 #include "console.h"
 #include "console_command.h"
 #include "cmdline.h"
 #include "uartstdio.h"
 #include "board_spi.h"
+#include "board_eeprom.h"
 #include "cc1101.h"
 #include "cc1101regs.h"
 
@@ -20,6 +24,7 @@ extern cc1101_state_t volatile cc1101_state;
 
 uint8_t volatile console_command_verbosity_level;
 
+// Command 'help'
 static int console_command_help(int argc, char *argv[]) {
 	tCmdLineEntry *psEntry;
 
@@ -40,6 +45,7 @@ static int console_command_help(int argc, char *argv[]) {
     return(0);
 }
 
+// Command 'adr'
 static int console_command_setaddress(int argc, char *argv[]) {
     uint32_t num;
     char *endptr;
@@ -81,15 +87,35 @@ static int console_command_setaddress(int argc, char *argv[]) {
     return (0);       
 }
 
-static int console_command_snop(int argc, char *argv[]) {
-    uint8_t status;
-    
-    status = cc1101_cmd(CC1101_SNOP);
-    if (console_command_verbosity_level > VERBOSITY_ERROR) 
-        UARTprintf("received: 0x%02x\n", status);
-    return(0);
+// Command 'eep'
+static int console_command_eeprom(int argc, char *argv[]) {
+    if (argc < 2) {
+        if (console_command_verbosity_level > VERBOSITY_NONE)
+            UARTprintf("error: missing field.\n");
+        return (0);
+    }
+
+    if (!strcmp (argv[1], "load")) {
+        if (board_eeprom_loadregisterspace() && console_command_verbosity_level > VERBOSITY_NONE)
+            UARTprintf("error: EEPROM is corrupted.\n");
+        else
+            UARTprintf("register space is updated from EEPROM.\n");
+    } else if (!strcmp (argv[1],"save")) {
+        if (console_command_verbosity_level > VERBOSITY_NONE) {
+            if (board_eeprom_saveregisterspace())
+                UARTprintf("error: EEPROM is corrupted.\n");
+            else
+                UARTprintf("register space has been saved to EEPROM.\n");
+        }
+    } else {
+        UARTprintf("error: invalid input.\n");
+        return (0);
+    }
+
+    return (0);       
 }
 
+// Command 'get'
 static int console_command_getreg(int argc, char *argv[]) {
     uint8_t status;
     uint32_t num;
@@ -119,6 +145,7 @@ static int console_command_getreg(int argc, char *argv[]) {
     return(0);
 }
 
+// Command 'pow'
 static int console_command_setpow(int argc, char *argv[]) {
     uint32_t num;
     char *endptr;
@@ -142,8 +169,8 @@ static int console_command_setpow(int argc, char *argv[]) {
     return(0);
 }
 
+// Command 'rep'
 static int console_command_report(int argc, char *argv[]) {
-    uint8_t status;
     
     UARTprintf("Radio state variables report\n");
     UARTprintf("----------------------------\n");
@@ -170,6 +197,14 @@ static int console_command_report(int argc, char *argv[]) {
     return(0);
 }
 
+// Command 'rst'
+static int console_command_reset(int argc, char *argv[]) {
+
+    HWREG(NVIC_APINT) = NVIC_APINT_VECTKEY | NVIC_APINT_SYSRESETREQ;
+    return (0);
+}
+
+// Command 'set'
 static int console_command_setreg(int argc, char *argv[]) {
     uint32_t num[2], i;
     char *endptr;
@@ -201,11 +236,20 @@ static int console_command_setreg(int argc, char *argv[]) {
     return(0);
 }
 
-static int console_command_setverbosity(int argc, char *argv[]) {
+// Command 'snop'
+static int console_command_snop(int argc, char *argv[]) {
+    uint8_t status;
+    
+    status = cc1101_cmd(CC1101_SNOP);
+    if (console_command_verbosity_level > VERBOSITY_ERROR) 
+        UARTprintf("received: 0x%02x\n", status);
+    return(0);
+}
 
+// Command 'verb'
+static int console_command_setverbosity(int argc, char *argv[]) {
     if (argc < 2) {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
-            UARTprintf("error: missing field.\n");
+        UARTprintf("verbosity level: %d\n", console_command_verbosity_level);
         return (0);
     }
 
@@ -236,10 +280,12 @@ void console_command_execute(char *commandline_received) {
 tCmdLineEntry g_psCmdTable[] = {
 
     { "adr", console_command_setaddress,   "{dev/dst address(d)} Set device or destination address." }, 
+    { "eep", console_command_eeprom,   "{load/save} Loads/saves register space to MCU EEPROM." }, 
     { "get", console_command_getreg,   "{reg address(h)} Gets normal or status register content." },
     { "help", console_command_help,   "Display list of commands." },
     { "pow", console_command_setpow,   "{value(h)} Sets output power." },
     { "rep", console_command_report,   "Reports radio state variables." },
+    { "rst", console_command_reset,   "Reset." },
     { "set", console_command_setreg,   "{reg address(h) value(h)} Gets normal or status register content." },
     { "snop", console_command_snop,   "Get status byte from CC1101." },
     { "verb", console_command_setverbosity,   "{none/error/all} Sets verbosity levels." },
