@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
-//#include <stdio.h>
+#include "types.h"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -40,6 +40,9 @@ static int console_command_help(int argc, char *argv[]) {
         psEntry++;
         ROM_SysCtlDelay(100000); // TODO: This is needed otherwise minicom outputs damaged text
     }
+    UARTprintf("------------------\n");
+    UARTprintf("Useful register addresses: MARCSTATE: 0x35, PKTLEN: 0x06, ADDR: 0x09\n");
+    UARTprintf("------------------\n");
 
     UARTprintf("\n");
     return(0);
@@ -241,6 +244,8 @@ static int console_command_snop(int argc, char *argv[]) {
     uint8_t status;
     
     status = cc1101_cmd(CC1101_SNOP);
+    // status = board_spi_sendbyte(CC1101_SNOP);
+    //board_spi_cspin_toggle();
     if (console_command_verbosity_level > VERBOSITY_ERROR) 
         UARTprintf("received: 0x%02x\n", status);
     return(0);

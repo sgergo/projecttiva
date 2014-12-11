@@ -3,6 +3,7 @@
 
 #include "console.h"
 #include "board.h"
+#include "task.h"
 
 int main()
 {  
@@ -11,7 +12,8 @@ int main()
 
     while(1)
     {    
-        console_process();     
+        console_process();
+        //task_process();     
     }
 
     return 0;

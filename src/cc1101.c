@@ -15,6 +15,7 @@
 #include "driverlib/rom_map.h"
 
 #include "board.h"
+#include "console.h"
 
 cc1101_interface_t cc1101_interface;
 cc1101_state_t volatile cc1101_state;
@@ -102,14 +103,24 @@ void cc1101_sendpacket(uint8_t *packet, packetsize_t packetsize, flag_t waitforc
 	uint8_t previouspacketlength;
 	int32_t quotient, rem;
 	uint8_t from;
+	uint8_t status1, status2;
 	
+	// Change to IDLE state
+	cc1101_cmd(CC1101_SIDLE);
+
 	// Store previous and update packet length register 
 	previouspacketlength = cc1101_read_reg(CC1101_PKTLEN);
 	cc1101_write_reg(CC1101_PKTLEN, packetsize);
+	console_printtext("pktlen: %d ", cc1101_read_reg(CC1101_PKTLEN));
 
+	console_printtext("elotte: %d ", cc1101_read_status_reg(CC1101_TXBYTES));
 	if (packetsize < CC1101_FIFO_SIZE) {
-		if (cc1101_write_txfifo(packet, 0, packetsize) == packetsize)
-			/*TODO: STX*/;
+		status1 = cc1101_write_txfifo(packet, 0, packetsize);
+		console_printtext("feltoltes: %d  ", status1);
+		if ( status1 == packetsize)
+			cc1101_cmd(CC1101_STX);
+			board_toggle_led(RED);
+			console_printtext("utana: %d\n", cc1101_read_status_reg(CC1101_TXBYTES));
 	} else {
 		// TX with FIFO refill necessary
 		// Calculate the number full TX FIFO chunks and the remainder
@@ -125,11 +136,11 @@ void cc1101_sendpacket(uint8_t *packet, packetsize_t packetsize, flag_t waitforc
 }
 
 void cc1101_GDIO0_ISR(void) {
-
+	board_toggle_led(BLUE);
 	cc1101_interface.gdio0_int_clear();
 }
 
 void cc1101_GDIO2_ISR(void) {
-
-	//cc1101_interface.gdio2_int_clear(GDO2PINPERIPHERIALBASE, GDO2PIN);
+	board_toggle_led(GREEN);
+	cc1101_interface.gdio2_int_clear();
 }

@@ -8,7 +8,8 @@
 typedef struct {
 	void (*spi_high) (void);
 	void (*spi_low) (void);
-	uint8_t (*spi_write) (uint8_t bytetosend);
+	void (*spi_toggle) (void);
+	uint32_t (*spi_write) (uint8_t bytetosend);
 	void (*board_delay_us) (uint32_t delay);
 	void (*board_delay_ms) (uint32_t delay);
 	void (*gdio0_edge_select) (uint32_t edge);
@@ -36,6 +37,7 @@ uint8_t cc1101_cmd(uint8_t cmd);
 
 void cc1101_init(void);
 void cc1101_update_state(void);
+void cc1101_sendpacket(uint8_t *packet, packetsize_t packetsize, flag_t waitforclearchannel);
 
 void cc1101_GDIO0_ISR(void);
 void cc1101_GDIO2_ISR(void);

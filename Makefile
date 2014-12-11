@@ -35,7 +35,7 @@ CFLAGS = -g $(COREFLAGS)
 CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall
 CFLAGS += -pedantic -DPART_$(MCU) -c -I$(TIVAWARE_PATH)
 CFLAGS += -DTARGET_IS_TM4C123_RB1
-LDFLAGS = $(COREFLAGS) -T$(LD_SCRIPT) -Wl,--entry=ResetISR,--gc-sections
+LDFLAGS = $(COREFLAGS) -T$(LD_SCRIPT) -Wl,--entry=ResetISR,--gc-sections -L $(TIVAWARE_PATH)/driverlib/gcc -l driver
 
 #######################################
 # end of user configuration

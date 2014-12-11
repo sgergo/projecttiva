@@ -24,6 +24,15 @@ void board_spi_cspin_high(void) {
 void board_spi_cspin_low(void) {
 	ROM_GPIOPinWrite(SPICSPINPERIPHERIALBASE, SPICSPIN, 0);
 }
+
+void board_spi_cspin_toggle(void) {
+    static bool pinstate = true;
+
+    pinstate ^= 1;
+    if (pinstate == true) board_spi_cspin_high();
+    else 
+        board_spi_cspin_low();      
+}
 #endif
 
 void board_spi_init(void) {
@@ -50,8 +59,7 @@ void board_spi_init(void) {
 #endif
 
     ROM_SSIConfigSetExpClk(SPIPERIPHERIALBASE, ROM_SysCtlClockGet(), SSI_FRF_MOTO_MODE_0,
-                       SSI_MODE_MASTER, 1000000, 8);
-
+                       SSI_MODE_MASTER, 2000000, 8);
     ROM_SSIEnable(SPIPERIPHERIALBASE);
 
     // Clear RX fifo
@@ -59,12 +67,12 @@ void board_spi_init(void) {
     	;
 }
 
-uint8_t board_spi_sendbyte(uint8_t bytetosend) {
+uint32_t board_spi_sendbyte(uint8_t bytetosend) {
 	uint32_t rxbuf;
 #ifdef CUSTOM_CS_PIN
 	board_spi_cspin_low();
 #endif
-	ROM_SSIDataPut(SPIPERIPHERIALBASE, bytetosend);
+	ROM_SSIDataPut(SPIPERIPHERIALBASE, (uint32_t) bytetosend);
 	while(ROM_SSIBusy(SPIPERIPHERIALBASE))
 		;
     ROM_SSIDataGet(SPIPERIPHERIALBASE, &rxbuf);
@@ -74,10 +82,10 @@ uint8_t board_spi_sendbyte(uint8_t bytetosend) {
     return rxbuf;
 }
 
-uint8_t board_spi_write(uint8_t bytetosend) {
+uint32_t board_spi_write(uint8_t bytetosend) {
     uint32_t rxbuf;
 
-    ROM_SSIDataPut(SPIPERIPHERIALBASE, bytetosend);
+    ROM_SSIDataPut(SPIPERIPHERIALBASE, (uint32_t) bytetosend);
     while(ROM_SSIBusy(SPIPERIPHERIALBASE))
         ;
     ROM_SSIDataGet(SPIPERIPHERIALBASE, &rxbuf);
