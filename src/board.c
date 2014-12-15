@@ -30,6 +30,11 @@ static void board_configure_led(void) {
 	ROM_GPIOPinWrite(LED_ALL_PORTBASE, LED_RED|LED_GREEN|LED_BLUE, 0); // Switch off all LEDs
 }
 
+
+void board_fault(void) {
+	ROM_GPIOPinWrite(LED_RED_PORTBASE, LED_RED, LED_RED);
+}
+
 void board_toggle_led(led_t led) {
 	uint32_t port;
 
@@ -54,6 +59,40 @@ void board_toggle_led(led_t led) {
 		default:
 			break;
 	}
+}
+
+void board_delay_us (uint32_t delay) {
+	ROM_SysCtlDelay(delayloopspermicrosecond * delay);
+}
+
+void board_delay_ms (uint32_t delay) {
+	ROM_SysCtlDelay(delayloopspermillisecond * delay);
+}
+
+void board_blink_led(led_t led) {
+	
+	switch (led) {
+		case RED:
+			ROM_GPIOPinWrite(LED_RED_PORTBASE, LED_RED, LED_RED);
+			board_delay_ms(100);
+			ROM_GPIOPinWrite(LED_RED_PORTBASE, LED_RED, 0);
+			break;
+
+		case BLUE:
+			ROM_GPIOPinWrite(LED_BLUE_PORTBASE, LED_BLUE, LED_BLUE);
+			board_delay_ms(100);
+			ROM_GPIOPinWrite(LED_BLUE_PORTBASE, LED_BLUE, 0);
+			break;
+
+		case GREEN:
+			ROM_GPIOPinWrite(LED_GREEN_PORTBASE, LED_GREEN, LED_GREEN);
+			board_delay_ms(100);
+			ROM_GPIOPinWrite(LED_GREEN_PORTBASE, LED_GREEN, 0);
+			break;
+		default:
+			break;
+	}
+	board_delay_ms(50);
 }
 
 void board_gdio0_edge_select(uint32_t edge) {
@@ -135,26 +174,16 @@ void board_gdio_port_ISR(void) {
 	uint32_t status;
 
 	status = GPIOIntStatus(GDO0PINPERIPHERIALBASE, 0);
-	//GPIOIntClear(GDO0PINPERIPHERIALBASE, 0xff);
 
 	if (status & GDO0INTPIN)
 		cc1101_GDIO0_ISR();
 	if (status & GDO2INTPIN)
 		cc1101_GDIO2_ISR();
-
-	//board_toggle_led(BLUE);
-}
-void board_delay_us (uint32_t delay) {
-	ROM_SysCtlDelay(delayloopspermicrosecond * delay);
-}
-
-void board_delay_ms (uint32_t delay) {
-	ROM_SysCtlDelay(delayloopspermillisecond * delay);
 }
 
 void board_init(void) {
 	uint32_t clockfreq;
-	ROM_SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+	ROM_SysCtlClockSet(SYSCTL_SYSDIV_2 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
                        SYSCTL_XTAL_16MHZ);
 	
 	clockfreq = ROM_SysCtlClockGet();
@@ -165,10 +194,9 @@ void board_init(void) {
 		//TODO: assert
 	}	
 	board_configure_led();
-	//board_configure_gdio0_pin();
-	//board_configure_gdio2_pin();
 	console_init();
 	board_spi_init();
+	console_printtext("Clock: %d\n", ROM_SysCtlClockGet());
 
 	// Configure interface functions
 	cc1101_interface.spi_low = board_spi_cspin_low;
@@ -184,7 +212,9 @@ void board_init(void) {
 	cc1101_interface.gdio0_int_clear = board_gdio0_int_clear;
 	cc1101_interface.gdio2_int_clear = board_gdio2_int_clear;
 	
-	cc1101_init(); 
+	cc1101_init();
+	board_configure_gdio0_pin();
+	board_configure_gdio2_pin(); 
 	board_systick_init();
 
 }

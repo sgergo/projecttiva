@@ -1,3 +1,4 @@
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "types.h"
@@ -74,6 +75,7 @@ static void cc1101_reset(void) {
     cc1101_interface.spi_high();
     cc1101_interface.board_delay_us(45);
     cc1101_cmd(CC1101_SRES);
+    cc1101_init_regs(); // Macro with all the initial register values, see cc1101regs.h
 }
 
 void cc1101_init(void) {
@@ -107,11 +109,11 @@ void cc1101_sendpacket(uint8_t *packet, packetsize_t packetsize, flag_t waitforc
 	
 	// Change to IDLE state
 	cc1101_cmd(CC1101_SIDLE);
-
+	cc1101_cmd(CC1101_SFTX);
 	// Store previous and update packet length register 
 	previouspacketlength = cc1101_read_reg(CC1101_PKTLEN);
 	cc1101_write_reg(CC1101_PKTLEN, packetsize);
-	console_printtext("pktlen: %d ", cc1101_read_reg(CC1101_PKTLEN));
+	// console_printtext("pktlen: %d ", cc1101_read_reg(CC1101_PKTLEN));
 
 	console_printtext("elotte: %d ", cc1101_read_status_reg(CC1101_TXBYTES));
 	if (packetsize < CC1101_FIFO_SIZE) {
@@ -119,8 +121,8 @@ void cc1101_sendpacket(uint8_t *packet, packetsize_t packetsize, flag_t waitforc
 		console_printtext("feltoltes: %d  ", status1);
 		if ( status1 == packetsize)
 			cc1101_cmd(CC1101_STX);
-			board_toggle_led(RED);
-			console_printtext("utana: %d\n", cc1101_read_status_reg(CC1101_TXBYTES));
+			// board_toggle_led(RED);
+			// console_printtext("utana: %d\n", cc1101_read_status_reg(CC1101_TXBYTES));
 	} else {
 		// TX with FIFO refill necessary
 		// Calculate the number full TX FIFO chunks and the remainder
@@ -136,11 +138,12 @@ void cc1101_sendpacket(uint8_t *packet, packetsize_t packetsize, flag_t waitforc
 }
 
 void cc1101_GDIO0_ISR(void) {
-	board_toggle_led(BLUE);
+	board_blink_led(BLUE);
+	console_printtext("utana: %d \n", cc1101_read_status_reg(CC1101_TXBYTES));
 	cc1101_interface.gdio0_int_clear();
 }
 
 void cc1101_GDIO2_ISR(void) {
-	board_toggle_led(GREEN);
+	//board_toggle_led(GREEN);
 	cc1101_interface.gdio2_int_clear();
 }

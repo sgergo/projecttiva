@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include "inc/hw_nvic.h"
 #include "inc/hw_types.h"
-//#include "uartstdio.h"
 
 //*****************************************************************************
 //
@@ -46,6 +45,7 @@ static void IntDefaultHandler(void);
 extern void UARTStdioIntHandler(void);
 extern void board_systick_systickISR(void);
 extern void board_gdio_port_ISR(void);
+extern void board_fault(void);
 //*****************************************************************************
 //
 // The entry point for the application.
@@ -328,6 +328,7 @@ FaultISR(void)
     //
     // Enter an infinite loop.
     //
+    board_fault();
     while(1)
     {
     }

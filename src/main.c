@@ -13,7 +13,7 @@ int main()
     while(1)
     {    
         console_process();
-        //task_process();     
+        task_process();     
     }
 
     return 0;

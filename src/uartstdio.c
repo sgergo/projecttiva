@@ -37,6 +37,8 @@
 #include "driverlib/uart.h"
 #include "uartstdio.h"
 
+#include "board.h"
+#include "console.h"
 //*****************************************************************************
 //
 //! \addtogroup uartstdio_api

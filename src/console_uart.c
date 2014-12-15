@@ -5,7 +5,7 @@
 #include "console_uart.h"
 #include "boardconfig.h"
 #include "uartstdio.h"
-//#include "board.h"
+#include "board.h"
 
 #include "inc/hw_gpio.h"
 #include "inc/hw_memmap.h"
@@ -18,7 +18,6 @@
 
 void console_uart_process(char *stdin_buffer, uint32_t *bytes_in) {	
 	int f = UARTPeek('\r');
-    
 	if (f > -1) {
 			*bytes_in = UARTRxBytesAvail();
 			UARTgets(stdin_buffer, *bytes_in);

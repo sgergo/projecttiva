@@ -19,9 +19,10 @@
 #include "board_eeprom.h"
 #include "cc1101.h"
 #include "cc1101regs.h"
+#include "task.h"
 
 extern cc1101_state_t volatile cc1101_state;
-
+extern taskentry_t tasktable[];
 uint8_t volatile console_command_verbosity_level;
 
 // Command 'help'
@@ -148,6 +149,31 @@ static int console_command_getreg(int argc, char *argv[]) {
     return(0);
 }
 
+// Command 'ping'
+static int console_command_ping(int argc, char *argv[]) {
+    uint32_t num;
+    char *endptr;
+
+    if (argc < 2) {
+        if (console_command_verbosity_level > VERBOSITY_NONE)
+            UARTprintf("error: missing argument.\n");
+        return (0);
+    }
+
+    if (!strcmp (argv[1], "on")) {
+        tasktable[0].taskperiod = 10;
+        UARTprintf("ping is due in every 2 seconds.\n");
+    } else if (!strcmp (argv[1], "off")) {
+        tasktable[0].taskperiod = 0;
+        UARTprintf("ping is off.\n");
+    } else {
+        if (console_command_verbosity_level > VERBOSITY_NONE)
+            UARTprintf("error: invalid input.\n");
+    }
+
+    return(0);
+}
+
 // Command 'pow'
 static int console_command_setpow(int argc, char *argv[]) {
     uint32_t num;
@@ -205,6 +231,14 @@ static int console_command_reset(int argc, char *argv[]) {
 
     HWREG(NVIC_APINT) = NVIC_APINT_VECTKEY | NVIC_APINT_SYSRESETREQ;
     return (0);
+}
+
+static int console_command_send(int argc, char *argv[]) {
+
+    cc1101_sendpacket((uint8_t *)"PING", 5, 0);
+    if (console_command_verbosity_level > VERBOSITY_ERROR) 
+        UARTprintf("PING packet sent.\n");
+    return(0);
 }
 
 // Command 'set'
@@ -288,10 +322,12 @@ tCmdLineEntry g_psCmdTable[] = {
     { "eep", console_command_eeprom,   "{load/save} Loads/saves register space to MCU EEPROM." }, 
     { "get", console_command_getreg,   "{reg address(h)} Gets normal or status register content." },
     { "help", console_command_help,   "Display list of commands." },
+    { "ping", console_command_ping,   "{on/off} Sends periodic ping packet."},
     { "pow", console_command_setpow,   "{value(h)} Sets output power." },
     { "rep", console_command_report,   "Reports radio state variables." },
     { "rst", console_command_reset,   "Reset." },
     { "set", console_command_setreg,   "{reg address(h) value(h)} Gets normal or status register content." },
+    { "send", console_command_send,   "Sends a ping packet."},
     { "snop", console_command_snop,   "Get status byte from CC1101." },
     { "verb", console_command_setverbosity,   "{none/error/all} Sets verbosity levels." },
     { 0, 0, 0 } // Don't touch it, last entry must be a terminating NULL entry

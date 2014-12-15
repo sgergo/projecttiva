@@ -10,6 +10,8 @@
 
 #include "uartstdio.h"
 
+#include "board.h"
+
 extern uint8_t volatile console_command_verbosity_level;
 
 void console_init(void) {
