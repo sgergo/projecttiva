@@ -12,7 +12,7 @@
 #include "inc/hw_nvic.h"
 
 #include "console.h"
-#include "console_command.h"
+#include "command.h"
 #include "cmdline.h"
 #include "uartstdio.h"
 #include "board_spi.h"
@@ -23,10 +23,10 @@
 
 extern cc1101_state_t volatile cc1101_state;
 extern taskentry_t tasktable[];
-uint8_t volatile console_command_verbosity_level;
+uint8_t volatile command_verbosity_level;
 
 // Command 'help'
-static int console_command_help(int argc, char *argv[]) {
+static int command_help(int argc, char *argv[]) {
 	tCmdLineEntry *psEntry;
 
     UARTprintf("\nAvailable commands\n");
@@ -50,12 +50,12 @@ static int console_command_help(int argc, char *argv[]) {
 }
 
 // Command 'adr'
-static int console_command_setaddress(int argc, char *argv[]) {
+static int command_setaddress(int argc, char *argv[]) {
     uint32_t num;
     char *endptr;
 
     if (argc < 3) {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: missing fields.\n");
         return (0);
     }
@@ -63,13 +63,13 @@ static int console_command_setaddress(int argc, char *argv[]) {
     errno = 0;
     num = strtol(argv[2], &endptr, 10);
     if (*endptr != 0 || errno != 0) {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: invalid input.\n");
         return (0);
     }       
 
     if (num > 255) {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: invalid value.\n");
         return (0);
     } else {
@@ -80,32 +80,32 @@ static int console_command_setaddress(int argc, char *argv[]) {
         } else if (!strcmp (argv[1],"dst")) {
             cc1101_state.destination_address = 0;
         } else {
-            if (console_command_verbosity_level > VERBOSITY_NONE)
+            if (command_verbosity_level > VERBOSITY_NONE)
                 UARTprintf("error: invalid input.\n");
             return (0);
         }
 
-        if (console_command_verbosity_level > VERBOSITY_ERROR) 
+        if (command_verbosity_level > VERBOSITY_ERROR) 
             UARTprintf("%s address updated.\n", argv[1]);  
     }
     return (0);       
 }
 
 // Command 'eep'
-static int console_command_eeprom(int argc, char *argv[]) {
+static int command_eeprom(int argc, char *argv[]) {
     if (argc < 2) {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: missing field.\n");
         return (0);
     }
 
     if (!strcmp (argv[1], "load")) {
-        if (board_eeprom_loadregisterspace() && console_command_verbosity_level > VERBOSITY_NONE)
+        if (board_eeprom_loadregisterspace() && command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: EEPROM is corrupted.\n");
         else
             UARTprintf("register space is updated from EEPROM.\n");
     } else if (!strcmp (argv[1],"save")) {
-        if (console_command_verbosity_level > VERBOSITY_NONE) {
+        if (command_verbosity_level > VERBOSITY_NONE) {
             if (board_eeprom_saveregisterspace())
                 UARTprintf("error: EEPROM is corrupted.\n");
             else
@@ -120,13 +120,13 @@ static int console_command_eeprom(int argc, char *argv[]) {
 }
 
 // Command 'get'
-static int console_command_getreg(int argc, char *argv[]) {
+static int command_getreg(int argc, char *argv[]) {
     uint8_t status;
     uint32_t num;
     char *endptr;
 
     if (argc < 2) {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: missing register address.\n");
         return (0);
     }
@@ -134,7 +134,7 @@ static int console_command_getreg(int argc, char *argv[]) {
     errno = 0;
     num = strtol(argv[1], &endptr, 16);
     if (*endptr != 0 || errno != 0) {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: invalid input.\n");
         return (0);
     }       
@@ -144,30 +144,28 @@ static int console_command_getreg(int argc, char *argv[]) {
     else
         status = cc1101_read_status_reg((uint8_t) num);
 
-    if (console_command_verbosity_level > VERBOSITY_ERROR) 
+    if (command_verbosity_level > VERBOSITY_ERROR) 
         UARTprintf("received: 0x%02x\n", status);
     return(0);
 }
 
 // Command 'ping'
-static int console_command_ping(int argc, char *argv[]) {
-    uint32_t num;
-    char *endptr;
+static int command_ping(int argc, char *argv[]) {
 
     if (argc < 2) {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: missing argument.\n");
         return (0);
     }
-
+    
     if (!strcmp (argv[1], "on")) {
-        tasktable[0].taskperiod = 10;
+        tasktable[0].taskrepetition = -1;
         UARTprintf("ping is due in every 2 seconds.\n");
     } else if (!strcmp (argv[1], "off")) {
-        tasktable[0].taskperiod = 0;
+        tasktable[0].taskrepetition = 0;
         UARTprintf("ping is off.\n");
     } else {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: invalid input.\n");
     }
 
@@ -175,12 +173,12 @@ static int console_command_ping(int argc, char *argv[]) {
 }
 
 // Command 'pow'
-static int console_command_setpow(int argc, char *argv[]) {
+static int command_setpow(int argc, char *argv[]) {
     uint32_t num;
     char *endptr;
 
     if (argc < 2) {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: missing power value.\n");
         return (0);
     }
@@ -188,7 +186,7 @@ static int console_command_setpow(int argc, char *argv[]) {
     errno = 0;
     num = strtol(argv[1], &endptr, 16);
     if (*endptr != 0 || errno != 0) {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: invalid input.\n");
         return (0);
     }       
@@ -199,7 +197,7 @@ static int console_command_setpow(int argc, char *argv[]) {
 }
 
 // Command 'rep'
-static int console_command_report(int argc, char *argv[]) {
+static int command_report(int argc, char *argv[]) {
     
     UARTprintf("Radio state variables report\n");
     UARTprintf("----------------------------\n");
@@ -208,7 +206,7 @@ static int console_command_report(int argc, char *argv[]) {
     UARTprintf("Output power (PATABLE):     0x%02x\n", cc1101_state.output_power);
 
     UARTprintf("Console verbosity level:      ");
-    switch (console_command_verbosity_level) {
+    switch (command_verbosity_level) {
         case VERBOSITY_NONE:
             UARTprintf("none.\n");
             break;
@@ -227,27 +225,28 @@ static int console_command_report(int argc, char *argv[]) {
 }
 
 // Command 'rst'
-static int console_command_reset(int argc, char *argv[]) {
+static int command_reset(int argc, char *argv[]) {
 
     HWREG(NVIC_APINT) = NVIC_APINT_VECTKEY | NVIC_APINT_SYSRESETREQ;
     return (0);
 }
 
-static int console_command_send(int argc, char *argv[]) {
+static int command_send(int argc, char *argv[]) {
 
-    cc1101_sendpacket((uint8_t *)"PING", 5, 0);
-    if (console_command_verbosity_level > VERBOSITY_ERROR) 
+    // cc1101_sendpacket((uint8_t *)"PING", 5, 0);
+    tasktable[0].taskrepetition = 5;
+    if (command_verbosity_level > VERBOSITY_ERROR) 
         UARTprintf("PING packet sent.\n");
     return(0);
 }
 
 // Command 'set'
-static int console_command_setreg(int argc, char *argv[]) {
+static int command_setreg(int argc, char *argv[]) {
     uint32_t num[2], i;
     char *endptr;
 
     if (argc < 3) {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: missing fields.\n");
         return (0);
     }
@@ -256,7 +255,7 @@ static int console_command_setreg(int argc, char *argv[]) {
         errno = 0;
         num[i] = strtol(argv[i+1], &endptr, 16);
         if (*endptr != 0 || errno != 0) {
-            if (console_command_verbosity_level > VERBOSITY_NONE)
+            if (command_verbosity_level > VERBOSITY_NONE)
                 UARTprintf("error: invalid input.\n");
             return (0);
         }
@@ -264,40 +263,38 @@ static int console_command_setreg(int argc, char *argv[]) {
     if ((num[0] & 0xff) < 0x30) 
         cc1101_write_reg((uint8_t) num[0], (uint8_t) num[1]);
     else {
-        if (console_command_verbosity_level > VERBOSITY_NONE)
+        if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: invalid value.\n");
     }
 
-    if (console_command_verbosity_level > VERBOSITY_ERROR)
+    if (command_verbosity_level > VERBOSITY_ERROR)
         UARTprintf("register overwritten.\n");
     return(0);
 }
 
 // Command 'snop'
-static int console_command_snop(int argc, char *argv[]) {
-    uint8_t status;
-    
+static int command_snop(int argc, char *argv[]) {
+    uint8_t status;    
     status = cc1101_cmd(CC1101_SNOP);
-    // status = board_spi_sendbyte(CC1101_SNOP);
-    //board_spi_cspin_toggle();
-    if (console_command_verbosity_level > VERBOSITY_ERROR) 
+
+    if (command_verbosity_level > VERBOSITY_ERROR) 
         UARTprintf("received: 0x%02x\n", status);
     return(0);
 }
 
 // Command 'verb'
-static int console_command_setverbosity(int argc, char *argv[]) {
+static int command_setverbosity(int argc, char *argv[]) {
     if (argc < 2) {
-        UARTprintf("verbosity level: %d\n", console_command_verbosity_level);
+        UARTprintf("verbosity level: %d\n", command_verbosity_level);
         return (0);
     }
 
     if (!strcmp (argv[1], "none")) {
-        console_command_verbosity_level = VERBOSITY_NONE;
+        command_verbosity_level = VERBOSITY_NONE;
     } else if (!strcmp (argv[1],"error")) {
-        console_command_verbosity_level = VERBOSITY_ERROR;
+        command_verbosity_level = VERBOSITY_ERROR;
     } else if (!strcmp (argv[1],"all")) {
-        console_command_verbosity_level = VERBOSITY_ALL;
+        command_verbosity_level = VERBOSITY_ALL;
     } else {
         UARTprintf("error: invalid input.\n");
         return (0);
@@ -306,7 +303,7 @@ static int console_command_setverbosity(int argc, char *argv[]) {
     return (0);       
 }
 
-void console_command_execute(char *commandline_received) {
+void command_execute(char *commandline_received) {
 	int32_t ret;
 	ret = CmdLineProcess(commandline_received);
 
@@ -318,17 +315,17 @@ void console_command_execute(char *commandline_received) {
 // Command table entries - fill it!
 tCmdLineEntry g_psCmdTable[] = {
 
-    { "adr", console_command_setaddress,   "{dev/dst address(d)} Set device or destination address." }, 
-    { "eep", console_command_eeprom,   "{load/save} Loads/saves register space to MCU EEPROM." }, 
-    { "get", console_command_getreg,   "{reg address(h)} Gets normal or status register content." },
-    { "help", console_command_help,   "Display list of commands." },
-    { "ping", console_command_ping,   "{on/off} Sends periodic ping packet."},
-    { "pow", console_command_setpow,   "{value(h)} Sets output power." },
-    { "rep", console_command_report,   "Reports radio state variables." },
-    { "rst", console_command_reset,   "Reset." },
-    { "set", console_command_setreg,   "{reg address(h) value(h)} Gets normal or status register content." },
-    { "send", console_command_send,   "Sends a ping packet."},
-    { "snop", console_command_snop,   "Get status byte from CC1101." },
-    { "verb", console_command_setverbosity,   "{none/error/all} Sets verbosity levels." },
+    { "adr", command_setaddress,   "{dev/dst address(d)} Set device or destination address." }, 
+    { "eep", command_eeprom,   "{load/save} Loads/saves register space to MCU EEPROM." }, 
+    { "get", command_getreg,   "{reg address(h)} Gets normal or status register content." },
+    { "help", command_help,   "Display list of commands." },
+    { "ping", command_ping,   "{on/off} Sends periodic ping packet."},
+    { "pow", command_setpow,   "{value(h)} Sets output power." },
+    { "rep", command_report,   "Reports radio state variables." },
+    { "rst", command_reset,   "Reset." },
+    { "set", command_setreg,   "{reg address(h) value(h)} Gets normal or status register content." },
+    { "send", command_send,   "Sends a ping packet."},
+    { "snop", command_snop,   "Get status byte from CC1101." },
+    { "verb", command_setverbosity,   "{none/error/all} Sets verbosity level." },
     { 0, 0, 0 } // Don't touch it, last entry must be a terminating NULL entry
 };

@@ -43,7 +43,7 @@ static void IntDefaultHandler(void);
 //
 //*****************************************************************************
 extern void UARTStdioIntHandler(void);
-extern void board_systick_systickISR(void);
+extern void board_systick_ISR(void);
 extern void board_gdio_port_ISR(void);
 extern void board_fault(void);
 //*****************************************************************************
@@ -85,7 +85,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // Debug monitor handler
     0,                                      // Reserved
     IntDefaultHandler,                      // The PendSV handler
-    board_systick_systickISR, //IntDefaultHandler,                      // The SysTick handler
+    board_systick_ISR, //IntDefaultHandler,                      // The SysTick handler
     IntDefaultHandler,                      // GPIO Port A
     board_gdio_port_ISR, //IntDefaultHandler,                      // GPIO Port B
     IntDefaultHandler,                      // GPIO Port C

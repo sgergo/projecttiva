@@ -5,6 +5,6 @@
 #define VERBOSITY_ERROR 1
 #define VERBOSITY_ALL 2
 
-void console_command_execute(char *commandline_received);
+void command_execute(char *commandline_received);
 
 #endif

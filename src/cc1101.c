@@ -110,19 +110,22 @@ void cc1101_sendpacket(uint8_t *packet, packetsize_t packetsize, flag_t waitforc
 	// Change to IDLE state
 	cc1101_cmd(CC1101_SIDLE);
 	cc1101_cmd(CC1101_SFTX);
+	
 	// Store previous and update packet length register 
 	previouspacketlength = cc1101_read_reg(CC1101_PKTLEN);
 	cc1101_write_reg(CC1101_PKTLEN, packetsize);
-	// console_printtext("pktlen: %d ", cc1101_read_reg(CC1101_PKTLEN));
 
 	console_printtext("elotte: %d ", cc1101_read_status_reg(CC1101_TXBYTES));
 	if (packetsize < CC1101_FIFO_SIZE) {
 		status1 = cc1101_write_txfifo(packet, 0, packetsize);
-		console_printtext("feltoltes: %d  ", status1);
+		// console_printtext("feltoltes: %d  ", status1);
 		if ( status1 == packetsize)
 			cc1101_cmd(CC1101_STX);
-			// board_toggle_led(RED);
-			// console_printtext("utana: %d\n", cc1101_read_status_reg(CC1101_TXBYTES));
+
+		// Bedobalos
+		// cc1101_cmd(CC1101_STX);
+		// status1 = cc1101_write_txfifo(packet, 0, packetsize);
+		// console_printtext("feltoltes: %d  ", status1);
 	} else {
 		// TX with FIFO refill necessary
 		// Calculate the number full TX FIFO chunks and the remainder

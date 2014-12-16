@@ -3,10 +3,12 @@
 
 #define STDINBUFFERSIZE						128	// Static stdin buffer size in console_process function
 #define STDINDEFAULTCOMMANDSIZE				3   // Default length of a console command
+#define CONSOLE_DEFAULT_BAUDRATE			115200
 
 void console_init(void);
 void console_printtext(const char *format , ...);
-void console_process(void);
+void console_read_uart_available_bytes(char *stdin_buffer, uint32_t *bytes_in);
+//void console_process(void);
 
 #endif
 

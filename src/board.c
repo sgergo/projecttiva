@@ -1,24 +1,25 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "types.h"
-#include "driverlib/rom.h"
-#include "driverlib/rom_map.h"
+#include "boardconfig.h"
 
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_ints.h"
+
+#include "driverlib/rom.h"
+#include "driverlib/rom_map.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/gpio.h"
-//#include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
+#include "driverlib/systick.h"
 
-#include "boardconfig.h"
 #include "board.h"
 #include "board_spi.h"
-#include "board_systick.h"
 #include "console.h"
 #include "cc1101.h"
+#include "task.h"
 
 extern cc1101_interface_t cc1101_interface;
 uint32_t delayloopspermicrosecond;
@@ -181,6 +182,17 @@ void board_gdio_port_ISR(void) {
 		cc1101_GDIO2_ISR();
 }
 
+void board_systick_ISR(void) {
+	task_systick();
+}
+
+void board_systick_init(void) {
+	// Systick interrupt @ every 100 ms
+	ROM_SysTickPeriodSet(ROM_SysCtlClockGet() / 10);
+	ROM_SysTickIntEnable();
+	ROM_SysTickEnable();
+}
+
 void board_init(void) {
 	uint32_t clockfreq;
 	ROM_SysCtlClockSet(SYSCTL_SYSDIV_2 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
@@ -188,15 +200,14 @@ void board_init(void) {
 	
 	clockfreq = ROM_SysCtlClockGet();
 	if (clockfreq > 3e6) {
-		delayloopspermicrosecond = (ROM_SysCtlClockGet() / (uint32_t)1e6) / 3;
-		delayloopspermillisecond = (ROM_SysCtlClockGet() / (uint32_t)1e3) / 3;
+		delayloopspermicrosecond = (ROM_SysCtlClockGet() / (uint32_t) 1e6) / 3;
+		delayloopspermillisecond = (ROM_SysCtlClockGet() / (uint32_t) 1e3) / 3;
 		} else {
 		//TODO: assert
 	}	
 	board_configure_led();
 	console_init();
 	board_spi_init();
-	console_printtext("Clock: %d\n", ROM_SysCtlClockGet());
 
 	// Configure interface functions
 	cc1101_interface.spi_low = board_spi_cspin_low;
@@ -216,7 +227,9 @@ void board_init(void) {
 	board_configure_gdio0_pin();
 	board_configure_gdio2_pin(); 
 	board_systick_init();
-
+	console_printtext("\n\n\n**** TM4C  template ****\n");
+	console_printtext("* System clock: %d MHz *\n\n", ROM_SysCtlClockGet() / (uint32_t) 1e6);
+	ROM_IntMasterEnable();
 }
 
 
