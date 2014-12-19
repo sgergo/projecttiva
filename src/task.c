@@ -12,6 +12,8 @@
 #include "command.h"
 
 uint32_t volatile tasklist;
+extern cc1101_rxpacket_t cc1101_receivedpacket;
+extern cc1101_txpacket_t cc1101_sentpacket;
 
 static void task_console_process(void *ptr_task_struct) {
 	static char stdin_buffer[STDINBUFFERSIZE];
@@ -24,22 +26,30 @@ static void task_console_process(void *ptr_task_struct) {
 }
 
 static void task_sendpacket(void *ptr_task_struct) {
+	cc1101_txpacket_t * const ptr_txpacketstruct = (cc1101_txpacket_t *) ptr_task_struct;
 
-	cc1101_sendpacket((uint8_t *)"PING", 5, 0);
-	console_printtext("...ping..."); 
+	cc1101_sendpacket(ptr_txpacketstruct->txbuf, ptr_txpacketstruct->txpacketsize, 0);
+	console_printtext("...ping...\n"); 
 }
 
 static void task_receivepacket(void *ptr_task_struct) {
+	cc1101_rxpacket_t * const ptr_rxpacketstruct = (cc1101_rxpacket_t *) ptr_task_struct;
+	// ptr_rxpacketstruct = (rxpacket_t *) ptr_task_struct;
 
+	cc1101_receivepacket(ptr_rxpacketstruct->rcvbuf, &ptr_rxpacketstruct->rcvpacketsize, &ptr_rxpacketstruct->rcvrssidbm, &ptr_rxpacketstruct->rcvlqi);
+	if (cc1101_receivedpacket.rcvpacketsize > 0) {
+		console_printtext("crc: %d received: [%s] rssi: %d size: %d\n", (ptr_rxpacketstruct->rcvlqi & 0x80)>>7, ptr_rxpacketstruct->rcvbuf, ptr_rxpacketstruct->rcvrssidbm, ptr_rxpacketstruct->rcvpacketsize);
+		cc1101_receivedpacket.rcvpacketsize = 0;
+	}
 }
 
 // Task table entries - fill it!
 taskentry_t tasktable[] = {
-	/* Entry structure
-	* short description, task function, task period, periodcounter, task repetition, priority, pointer2taskstruct 
+	/* Entry structure:
+	* short description, task function ptr, task period, periodcounter, task repetition, priority, task arg struct ptr 
 	*/
-	{"Send packet.", task_sendpacket, 10, 0, 0, TASKPRIORITYLEVEL_LOW, NULL}, 
-	{"Receive packet.", task_receivepacket, 0, 0, 0, TASKPRIORITYLEVEL_HIGH, NULL}, 
+	{"Send packet.", task_sendpacket, 10, 0, 0, TASKPRIORITYLEVEL_LOW, (void*)&cc1101_sentpacket}, 
+	{"Receive packet.", task_receivepacket, 5, 0, 0, TASKPRIORITYLEVEL_HIGH, (void*)&cc1101_receivedpacket}, 
 	{"Process console.", task_console_process, 1, 0, -1, TASKPRIORITYLEVEL_LOW, NULL},
 	{0, 0, 0, 0, 0, 0, 0}
 };

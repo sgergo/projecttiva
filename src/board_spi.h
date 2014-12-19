@@ -13,5 +13,4 @@ extern void board_spi_cspin_low(void);
 extern void board_spi_cspin_toggle(void);
 #endif
 
-
 #endif

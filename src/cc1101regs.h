@@ -136,14 +136,14 @@
 
 #define cc1101_init_regs() \
 	cc1101_write_reg(CC1101_IOCFG2, 0x29);\
-  cc1101_write_reg(CC1101_IOCFG1, 0x2E);\
+	cc1101_write_reg(CC1101_IOCFG1, 0x2E);\
 	cc1101_write_reg(CC1101_IOCFG0, 0x06);\
 	cc1101_write_reg(CC1101_FIFOTHR, 0x47);\
 	cc1101_write_reg(CC1101_SYNC1, 0xD3);\
 	cc1101_write_reg(CC1101_SYNC0, 0x91);\
 	cc1101_write_reg(CC1101_PKTLEN, 0xFF);\
-	cc1101_write_reg(CC1101_PKTCTRL1, 0x00); /*no address check, no crc autoflush, no append status*/ \
-	cc1101_write_reg(CC1101_PKTCTRL0, 0x00); /*crc disabled TX/RX, fixed packet length*/\
+	cc1101_write_reg(CC1101_PKTCTRL1, 0x00); /*no address check, no crc autoflush, append no status bytes*/ \
+	cc1101_write_reg(CC1101_PKTCTRL0, 0x04); /*crc enabled TX/RX, fixed packet length*/\
 	cc1101_write_reg(CC1101_ADDR, 0x0D);\
 	cc1101_write_reg(CC1101_CHANNR, 0x00);\
 	cc1101_write_reg(CC1101_FSCTRL1, 0x06);\

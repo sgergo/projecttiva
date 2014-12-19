@@ -1,7 +1,5 @@
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "console.h"
 #include "board.h"
 #include "task.h"
 

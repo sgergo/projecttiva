@@ -24,6 +24,8 @@
 extern cc1101_state_t volatile cc1101_state;
 extern taskentry_t tasktable[];
 uint8_t volatile command_verbosity_level;
+extern cc1101_rxpacket_t cc1101_receivedpacket;
+extern cc1101_txpacket_t cc1101_sentpacket;
 
 // Command 'help'
 static int command_help(int argc, char *argv[]) {
@@ -196,6 +198,32 @@ static int command_setpow(int argc, char *argv[]) {
     return(0);
 }
 
+// Command 'recv'
+static int command_receive(int argc, char *argv[]) {
+
+    if (argc < 2) {
+        if (command_verbosity_level > VERBOSITY_NONE)
+            UARTprintf("error: missing argument.\n");
+        return (0);
+    }
+    
+    if (!strcmp (argv[1], "ping")) {
+        cc1101_receivedpacket.expectedpacketsize = 250;
+        tasktable[1].taskrepetition = -1;
+        UARTprintf("waiting for ping packets...\n");
+    } else if (!strcmp (argv[1], "off")) {
+        tasktable[1].taskrepetition = 0;
+        cc1101_cmd(CC1101_SFRX);
+        cc1101_cmd(CC1101_SIDLE);
+        UARTprintf("receive mode is off.\n");
+    } else {
+        if (command_verbosity_level > VERBOSITY_NONE)
+            UARTprintf("error: invalid input.\n");
+    }
+
+    return(0);
+}
+
 // Command 'rep'
 static int command_report(int argc, char *argv[]) {
     
@@ -231,12 +259,15 @@ static int command_reset(int argc, char *argv[]) {
     return (0);
 }
 
+// Command 'send'
 static int command_send(int argc, char *argv[]) {
 
-    // cc1101_sendpacket((uint8_t *)"PING", 5, 0);
-    tasktable[0].taskrepetition = 5;
+    memcpy(cc1101_sentpacket.txbuf, "PING", 5);
+    cc1101_sentpacket.txpacketsize = 250;
+    tasktable[0].taskrepetition = 1;
+
     if (command_verbosity_level > VERBOSITY_ERROR) 
-        UARTprintf("PING packet sent.\n");
+        UARTprintf("sending 5 ping packets...\n");
     return(0);
 }
 
@@ -321,6 +352,7 @@ tCmdLineEntry g_psCmdTable[] = {
     { "help", command_help,   "Display list of commands." },
     { "ping", command_ping,   "{on/off} Sends periodic ping packet."},
     { "pow", command_setpow,   "{value(h)} Sets output power." },
+    { "recv", command_receive,   "{ping}Enters receive mode." },
     { "rep", command_report,   "Reports radio state variables." },
     { "rst", command_reset,   "Reset." },
     { "set", command_setreg,   "{reg address(h) value(h)} Gets normal or status register content." },

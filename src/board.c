@@ -25,15 +25,14 @@ extern cc1101_interface_t cc1101_interface;
 uint32_t delayloopspermicrosecond;
 uint32_t delayloopspermillisecond;
 
+void board_fault(void) {
+	ROM_GPIOPinWrite(LED_RED_PORTBASE, LED_RED, LED_RED);
+}
+
 static void board_configure_led(void) {
 	ROM_SysCtlPeripheralEnable(LED_ALL_PINPERIPHERIAL);
 	ROM_GPIOPinTypeGPIOOutput(LED_ALL_PORTBASE, LED_RED|LED_BLUE|LED_GREEN);
 	ROM_GPIOPinWrite(LED_ALL_PORTBASE, LED_RED|LED_GREEN|LED_BLUE, 0); // Switch off all LEDs
-}
-
-
-void board_fault(void) {
-	ROM_GPIOPinWrite(LED_RED_PORTBASE, LED_RED, LED_RED);
 }
 
 void board_toggle_led(led_t led) {
@@ -62,6 +61,32 @@ void board_toggle_led(led_t led) {
 	}
 }
 
+void board_blink_led(led_t led) {
+	
+	switch (led) {
+		case RED:
+			ROM_GPIOPinWrite(LED_RED_PORTBASE, LED_RED, LED_RED);
+			board_delay_ms(50);
+			ROM_GPIOPinWrite(LED_RED_PORTBASE, LED_RED, 0);
+			break;
+
+		case BLUE:
+			ROM_GPIOPinWrite(LED_BLUE_PORTBASE, LED_BLUE, LED_BLUE);
+			board_delay_ms(50);
+			ROM_GPIOPinWrite(LED_BLUE_PORTBASE, LED_BLUE, 0);
+			break;
+
+		case GREEN:
+			ROM_GPIOPinWrite(LED_GREEN_PORTBASE, LED_GREEN, LED_GREEN);
+			board_delay_ms(50);
+			ROM_GPIOPinWrite(LED_GREEN_PORTBASE, LED_GREEN, 0);
+			break;
+		default:
+			break;
+	}
+	board_delay_ms(50);
+}
+
 void board_delay_us (uint32_t delay) {
 	ROM_SysCtlDelay(delayloopspermicrosecond * delay);
 }
@@ -70,31 +95,6 @@ void board_delay_ms (uint32_t delay) {
 	ROM_SysCtlDelay(delayloopspermillisecond * delay);
 }
 
-void board_blink_led(led_t led) {
-	
-	switch (led) {
-		case RED:
-			ROM_GPIOPinWrite(LED_RED_PORTBASE, LED_RED, LED_RED);
-			board_delay_ms(100);
-			ROM_GPIOPinWrite(LED_RED_PORTBASE, LED_RED, 0);
-			break;
-
-		case BLUE:
-			ROM_GPIOPinWrite(LED_BLUE_PORTBASE, LED_BLUE, LED_BLUE);
-			board_delay_ms(100);
-			ROM_GPIOPinWrite(LED_BLUE_PORTBASE, LED_BLUE, 0);
-			break;
-
-		case GREEN:
-			ROM_GPIOPinWrite(LED_GREEN_PORTBASE, LED_GREEN, LED_GREEN);
-			board_delay_ms(100);
-			ROM_GPIOPinWrite(LED_GREEN_PORTBASE, LED_GREEN, 0);
-			break;
-		default:
-			break;
-	}
-	board_delay_ms(50);
-}
 
 void board_gdio0_edge_select(uint32_t edge) {
 	uint32_t edgetype;
@@ -145,7 +145,7 @@ static void board_configure_gdio0_pin(void){
 
     GPIOIntDisable(GDO0PINPERIPHERIALBASE, GDO0INTPIN);
     GPIOIntClear(GDO0PINPERIPHERIALBASE, GDO0INTPIN);
-    board_gdio0_edge_select(EDGE_SELECT_FALLING);
+    board_gdio0_edge_select(EDGE_SELECT_BOTH);
     GPIOIntEnable(GDO0PINPERIPHERIALBASE, GDO0INTPIN);
     IntEnable(GDO0INT);
     
@@ -158,7 +158,7 @@ static void board_configure_gdio2_pin(void){
 
     GPIOIntDisable(GDO2PINPERIPHERIALBASE, GDO2PIN);
     GPIOIntClear(GDO2PINPERIPHERIALBASE, GDO2PIN);
-    board_gdio2_edge_select(EDGE_SELECT_RISING);
+    board_gdio2_edge_select(EDGE_SELECT_BOTH);
     GPIOIntEnable(GDO2PINPERIPHERIALBASE, GDO2PIN);
     IntEnable(GDO2INT);
 }
@@ -195,7 +195,7 @@ void board_systick_init(void) {
 
 void board_init(void) {
 	uint32_t clockfreq;
-	ROM_SysCtlClockSet(SYSCTL_SYSDIV_2 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+	ROM_SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
                        SYSCTL_XTAL_16MHZ);
 	
 	clockfreq = ROM_SysCtlClockGet();
@@ -204,7 +204,8 @@ void board_init(void) {
 		delayloopspermillisecond = (ROM_SysCtlClockGet() / (uint32_t) 1e3) / 3;
 		} else {
 		//TODO: assert
-	}	
+	}
+
 	board_configure_led();
 	console_init();
 	board_spi_init();
@@ -231,7 +232,3 @@ void board_init(void) {
 	console_printtext("* System clock: %d MHz *\n\n", ROM_SysCtlClockGet() / (uint32_t) 1e6);
 	ROM_IntMasterEnable();
 }
-
-
-
-
