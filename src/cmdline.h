@@ -91,6 +91,16 @@ typedef struct
     const char *pcCmd;
 
     //
+    //! A pointer to a string containing the arg(s) of the command.
+    //
+    const char *pcArgs;
+
+    //
+    //! A pointer to a string containing the format of the arg(s).
+    //
+    const char *pcFormat;
+
+    //
     //! A function pointer to the implementation of the command.
     //
     pfnCmdLine pfnCmd;

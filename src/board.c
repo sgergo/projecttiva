@@ -18,10 +18,8 @@
 #include "board.h"
 #include "board_spi.h"
 #include "console.h"
-#include "cc1101.h"
 #include "task.h"
 
-extern cc1101_interface_t cc1101_interface;
 uint32_t delayloopspermicrosecond;
 uint32_t delayloopspermillisecond;
 
@@ -96,8 +94,8 @@ void board_delay_ms (uint32_t delay) {
 }
 
 
-void board_gdio0_edge_select(uint32_t edge) {
-	uint32_t edgetype;
+void board_gpio0_edge_select(uint32_t edge) {
+/*	uint32_t edgetype;
 
 	switch (edge) {
 	 case EDGE_SELECT_RISING:
@@ -114,11 +112,12 @@ void board_gdio0_edge_select(uint32_t edge) {
 		break;
 	}
 
-	ROM_GPIOIntTypeSet(GDO0PINPERIPHERIALBASE, GDO0PIN,	edgetype);
+	ROM_GPIOIntTypeSet(GPIOPINPERIPHERIALBASE, GPIO0PIN, edgetype);
+	*/
 }
 
-void board_gdio2_edge_select(uint32_t edge) {
-	uint32_t edgetype;
+void board_gpio1_edge_select(uint32_t edge) {
+/*	uint32_t edgetype;
 
 	switch (edge) {
 	 case EDGE_SELECT_RISING:
@@ -135,51 +134,59 @@ void board_gdio2_edge_select(uint32_t edge) {
 		break;
 	}
 
-	ROM_GPIOIntTypeSet(GDO2PINPERIPHERIALBASE, GDO2PIN,	edgetype);
+	ROM_GPIOIntTypeSet(GPIOPINPERIPHERIALBASE, GPIO2PIN, edgetype);
+	*/
 }
 
-static void board_configure_gdio0_pin(void){
-	ROM_SysCtlPeripheralEnable(GDO0PINPERIPHERIAL);
-	ROM_GPIOPinTypeGPIOInput(GDO0PINPERIPHERIALBASE, GDO0PIN);
-	ROM_GPIOPadConfigSet(GDO0PINPERIPHERIALBASE, GDO0PIN, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+static void board_configure_gpio0_pin(void){
+	/*
+	ROM_SysCtlPeripheralEnable(GPIOPINPERIPHERIAL);
+	ROM_GPIOPinTypeGPIOInput(GPIOPINPERIPHERIALBASE, GPIO0PIN);
+	ROM_GPIOPadConfigSet(GPIOPINPERIPHERIALBASE, GPIO0PIN, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
 
-    GPIOIntDisable(GDO0PINPERIPHERIALBASE, GDO0INTPIN);
-    GPIOIntClear(GDO0PINPERIPHERIALBASE, GDO0INTPIN);
+    GPIOIntDisable(GPIOPINPERIPHERIALBASE, GPIO0INTPIN);
+    GPIOIntClear(GPIOPINPERIPHERIALBASE, GPIO0INTPIN);
     board_gdio0_edge_select(EDGE_SELECT_BOTH);
-    GPIOIntEnable(GDO0PINPERIPHERIALBASE, GDO0INTPIN);
-    IntEnable(GDO0INT);
-    
+    GPIOIntEnable(GPIOPINPERIPHERIALBASE, GPIO0INTPIN);
+    IntEnable(GPIO0INT);
+    */ 
 }
 
-static void board_configure_gdio2_pin(void){
-	ROM_SysCtlPeripheralEnable(GDO2PINPERIPHERIAL);
-	ROM_GPIOPinTypeGPIOInput(GDO2PINPERIPHERIALBASE, GDO2PIN);
-	ROM_GPIOPadConfigSet(GDO2PINPERIPHERIALBASE, GDO2PIN, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+static void board_configure_gpio1_pin(void){
+	/*
+	ROM_SysCtlPeripheralEnable(GPIOPINPERIPHERIAL);
+	ROM_GPIOPinTypeGPIOInput(GPIOPINPERIPHERIALBASE, GPIO1PIN);
+	ROM_GPIOPadConfigSet(GPIOPINPERIPHERIALBASE, GPIO1PIN, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
 
-    GPIOIntDisable(GDO2PINPERIPHERIALBASE, GDO2PIN);
-    GPIOIntClear(GDO2PINPERIPHERIALBASE, GDO2PIN);
-    board_gdio2_edge_select(EDGE_SELECT_BOTH);
-    GPIOIntEnable(GDO2PINPERIPHERIALBASE, GDO2PIN);
-    IntEnable(GDO2INT);
+    GPIOIntDisable(GPIOPINPERIPHERIALBASE, GPIO1INTPIN);
+    GPIOIntClear(GPIOPINPERIPHERIALBASE, GPIO1INTPIN);
+    board_gdio0_edge_select(EDGE_SELECT_BOTH);
+    GPIOIntEnable(GPIOPINPERIPHERIALBASE, GPIO1INTPIN);
+    IntEnable(GPIO1INT);
+    */
 }
 
-void board_gdio0_int_clear(void) {
-	GPIOIntClear(GDO0PINPERIPHERIALBASE, GDO0PIN);
+void board_gpio0_int_clear(void) {
+	//GPIOIntClear(GPIOPINPERIPHERIALBASE, GPIO0PIN);
 }
 
-void board_gdio2_int_clear(void) {
-	GPIOIntClear(GDO2PINPERIPHERIALBASE, GDO2PIN);
+void board_gpio1_int_clear(void) {
+	//GPIOIntClear(GPIOPINPERIPHERIALBASE, GPIO1PIN);
 }
 
-void board_gdio_port_ISR(void) {
+void board_gpio_port_ISR(void) {
+	/*
 	uint32_t status;
+	
+	status = GPIOIntStatus(GPIOPINPERIPHERIALBASE, 0);
 
-	status = GPIOIntStatus(GDO0PINPERIPHERIALBASE, 0);
-
-	if (status & GDO0INTPIN)
-		cc1101_GDIO0_ISR();
-	if (status & GDO2INTPIN)
-		cc1101_GDIO2_ISR();
+	//check which pin has an IRQ
+	if (status & GPIO0INTPIN)
+		do_something();
+	if (status & GPIO1INTPIN)
+		do_something();
+	//et cetera
+	*/
 }
 
 void board_systick_ISR(void) {
@@ -209,24 +216,7 @@ void board_init(void) {
 	board_configure_led();
 	console_init();
 	board_spi_init();
-
-	// Configure interface functions
-	cc1101_interface.spi_low = board_spi_cspin_low;
-	cc1101_interface.spi_high = board_spi_cspin_high;
-	cc1101_interface.spi_write = board_spi_write;
-
-	cc1101_interface.board_delay_us = board_delay_us;
-	cc1101_interface.board_delay_ms = board_delay_ms;
-
-	cc1101_interface.gdio0_edge_select = board_gdio0_edge_select;
-	cc1101_interface.gdio2_edge_select = board_gdio2_edge_select;
-	
-	cc1101_interface.gdio0_int_clear = board_gdio0_int_clear;
-	cc1101_interface.gdio2_int_clear = board_gdio2_int_clear;
-	
-	cc1101_init();
-	board_configure_gdio0_pin();
-	board_configure_gdio2_pin(); 
+		
 	board_systick_init();
 	console_printtext("\n\n\n**** TM4C  template ****\n");
 	console_printtext("* System clock: %d MHz *\n\n", ROM_SysCtlClockGet() / (uint32_t) 1e6);

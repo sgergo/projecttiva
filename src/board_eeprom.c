@@ -9,9 +9,6 @@
 #include "driverlib/eeprom.h"
 #include "driverlib/sysctl.h"
 
-#include "cc1101.h"
-
-
 static int32_t board_eeprom_enable_eeprom_peripherial(void) {
 	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_EEPROM0);
 	board_delay_ms (100);
@@ -24,6 +21,7 @@ static void board_eeprom_disable_eeprom_peripherial(void) {
 }
 
 int32_t board_eeprom_loadregisterspace(void) {
+	// Use buf in n*16 bytes chunks
 	uint32_t regs[48];
 	uint32_t i;
 	uint8_t *byteptr;
@@ -34,10 +32,10 @@ int32_t board_eeprom_loadregisterspace(void) {
 	// Read register values into local buffer
 	ROM_EEPROMRead(regs, 0x400, sizeof(regs));
 
-	// Update radio register values
+	// Update register values
 	byteptr = (uint8_t *) regs;
-	for (i = 0; i < 41; i++)
-		cc1101_write_reg(i, *byteptr++);
+	for (i = 0; i < 48; i++)
+		/* do_something(i, *byteptr++) */;
 
 	// Disable the EEPROM peripherial to save power
 	board_eeprom_disable_eeprom_peripherial();
@@ -54,8 +52,8 @@ int32_t board_eeprom_saveregisterspace(void) {
 
 	// Store registers in local buffer
 	byteptr = (uint8_t *) regs;
-	for (i = 0; i < 41; i++) 
-		*byteptr++ = cc1101_read_reg(i);
+	for (i = 0; i < 48; i++) 
+		/* *byteptr++ = do_something(i)*/;
 
 	// Store register space in EEPROM
 	ROM_EEPROMProgram(regs, 0x400, sizeof(regs));
