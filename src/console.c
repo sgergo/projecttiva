@@ -51,9 +51,9 @@ void console_init(void) {
 
 void console_printtext(const char *format , ...) {
 	va_list arglist;
-   	va_start( arglist, format );
-   	UARTvprintf( format, arglist );
-   	va_end( arglist );
+ 	va_start( arglist, format );
+ 	UARTvprintf( format, arglist );
+ 	va_end( arglist );
 }
 
 

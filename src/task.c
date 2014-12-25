@@ -1,8 +1,8 @@
 #include <stdint.h>
+#include "types.h"
 #include <stdio.h>
 #include <string.h>
 
-#include "types.h"
 #include "task.h"
 #include "taskarg.h"
 
@@ -26,9 +26,14 @@ static void task_example2(void *ptr_task_struct) {
 	console_printtext("example2 task.\n"); 
 }
 
+static void task_example3(void *ptr_task_struct) {
+
+	console_printtext("example3 task with value: 0x%02x\n", ((default_task_arg_t *)ptr_task_struct)->uintval); 
+}
+
 static void task_console_process(void *ptr_task_struct) {
 	static char stdin_buffer[STDINBUFFERSIZE];
-	static uint32_t bytes_in;
+	static defuint_t bytes_in;
 
 	console_read_uart_available_bytes(stdin_buffer, &bytes_in);
 
@@ -41,17 +46,18 @@ taskentry_t tasktable[] = {
 	/* Entry structure:
 	* short description, task function ptr, task period, periodcounter, task repetition, priority, task arg struct ptr 
 	*/
-	{"Example1.", task_example1, 5, 0, 0, TASKPRIORITYLEVEL_HIGH, NULL}, 
-	{"Example2.", task_example2, 5, 0, 0, TASKPRIORITYLEVEL_HIGH, NULL}, 
-	{"System idle.", task_idle, 5, 0, 0, TASKPRIORITYLEVEL_HIGH, NULL}, 
-	{"Process console.", task_console_process, 1, 0, -1, TASKPRIORITYLEVEL_LOW, NULL},
+	{"example1", task_example1, 5, 0, 0, TASKPRIORITYLEVEL_HIGH, NULL}, 
+	{"example2", task_example2, 5, 0, 0, TASKPRIORITYLEVEL_HIGH, NULL},
+	{"example3", task_example3, 5, 0, 0, TASKPRIORITYLEVEL_HIGH, NULL}, 
+	{"idle", task_idle, 5, 0, 0, TASKPRIORITYLEVEL_HIGH, NULL}, 
+	{"console_process", task_console_process, 1, 0, -1, TASKPRIORITYLEVEL_LOW, NULL},
 	{0, 0, 0, 0, 0, 0, 0}
 };
 
 void task_process(void) {
 	taskentry_t *ptr_taskentry = &tasktable[0];
-	uint32_t tasklist_copy;
-	uint32_t i = 0;
+	tasklist_t tasklist_copy;
+	defuint_t i = 0;
 
 	// Make a copy of the tasklist variable to avoid race condition
 	tasklist_copy = tasklist;
@@ -75,7 +81,7 @@ void task_process(void) {
 
 void task_systick(void) {
 	taskentry_t *ptr_taskentry = &tasktable[0];
-	uint32_t i = 0;
+	defuint_t i = 0;
 	
 	while(ptr_taskentry->taskinfo) {
 
@@ -95,9 +101,9 @@ void task_systick(void) {
     }
 }
 
-int32_t task_find_task_ID( char* taskstr) {
+int32_t task_find_task_ID_by_infostring( char* taskstr) {
 	taskentry_t *ptr_taskentry = &tasktable[0];
-	int32_t i = 0;
+	defuint_t i = 0;
 
 	while(ptr_taskentry->taskinfo) {
 		if (!strcmp (ptr_taskentry->taskinfo, taskstr))

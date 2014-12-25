@@ -1,6 +1,6 @@
 #include <stdint.h>
-#include <stdbool.h>
 #include "types.h"
+#include <stdbool.h>
 #include "board.h"
 #include "board_eeprom.h"
 

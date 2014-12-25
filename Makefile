@@ -1,5 +1,4 @@
 
-
 # Prefix for the arm-eabi-none toolchain.
 COMPILER = arm-none-eabi
 
@@ -12,12 +11,13 @@ FPU=-mfpu=fpv4-sp-d16 -mfloat-abi=softfp
 TIVAWARE_PATH=~/ti/tivaware
 #TIVAWARE_PATH = $(shell test -d /home/gsantha/ti/tivaware && echo /home/gsantha/ti/tivaware || echo /home/sg/ti/tivaware )
 
+#Build directory name
 OUTDIR = build
 
 # Program name definition for ARM GNU C compiler.
 CC      = ${COMPILER}-gcc
 # Program name definition for ARM GNU Linker.
-LD      = ${COMPILER}-ld
+LD      = ${COMPILER}-gcc
 # Program name definition for ARM GNU Object copy.
 CP      = ${COMPILER}-objcopy
 # Program name definition for ARM GNU Object dump.
@@ -25,13 +25,18 @@ OD      = ${COMPILER}-objdump
 # Program name definition for ARM GNU Debugger.
 DB		= ${COMPILER}-gdb
 
-# Aditional flags to the compiler
-CFLAGS=-mthumb ${CPU} ${FPU} -O3 -ffunction-sections -fdata-sections -MD -std=c99 -Wall -pedantic -c -g
+# Core flags
+COREFLAGS =-mthumb ${CPU} ${FPU} 
+COREFLAGS += -DTARGET_IS_TM4C123_RB1
+
+# Additional flags to the compiler
+CFLAGS= -g ${COREFLAGS}
+CFLAGS+=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall -pedantic -c -g
 # Library paths passed as flags.
-CFLAGS+= -I ${TIVAWARE_PATH} -DPART_$(PART) -c -DTARGET_IS_BLIZZARD_RB1
+CFLAGS+= -I ${TIVAWARE_PATH} -DPART_$(PART)
 
 # Flags for linker
-LFLAGS  =--gc-sections --entry=ResetISR
+LFLAGS = $(COREFLAGS) -T $(LINKER_FILE) -Wl,--entry=ResetISR,--gc-sections
 
 # Flags for objcopy
 CPFLAGS = -Obinary
@@ -65,12 +70,11 @@ STARTUP_FILE = startup_gcc
 LINKER_FILE = $(PART).ld
 
 SRC = $(shell find . -name '[!.]*.c' -not -path "./contrib/*")
-#OBJS = $(SRC:.c=.o)
 OBJS = $(addprefix $(OUTDIR)/,$(notdir $(SRC:.c=.o)))
 RM      = rm -f
 MKDIR	= mkdir -p
 
-# Color codes
+# Output text color codes
 BLUE = '\033[0;34m'
 GREEN = '\033[0;32m'
 YELLOW = '\033[0;33m'
@@ -89,11 +93,11 @@ $(OUTDIR)/%.o: src/%.c | $(OUTDIR)
 
 $(OUTDIR)/${PROJECT_NAME}.axf: $(OBJS)
 	@echo
-	@echo Making driverlib
-	$(MAKE) -C ${TIVAWARE_PATH}/driverlib/
-	@echo
+#	@echo Making driverlib
+#	$(MAKE) -C ${TIVAWARE_PATH}/driverlib/
+#	@echo
 	@echo -e $(BLUE)Linking...$(NC)
-	$(LD) -T $(LINKER_FILE) $(LFLAGS) -o $(OUTDIR)/${PROJECT_NAME}.axf $(OBJS) ${TIVAWARE_PATH}/driverlib/gcc/libdriver.a $(LIBM_PATH) $(LIBC_PATH) $(LIB_GCC_PATH)
+	$(LD) $(LFLAGS) -o $(OUTDIR)/${PROJECT_NAME}.axf $(OBJS) ${TIVAWARE_PATH}/driverlib/gcc/libdriver.a $(LIBM_PATH) $(LIBC_PATH) $(LIB_GCC_PATH)
 
 $(OUTDIR)/${PROJECT_NAME}: $(OUTDIR)/${PROJECT_NAME}.axf
 	@echo
