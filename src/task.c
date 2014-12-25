@@ -16,6 +16,16 @@ static void task_idle(void *ptr_task_struct) {
 	console_printtext("idle.\n"); 
 }
 
+static void task_example1(void *ptr_task_struct) {
+	
+	console_printtext("example1 task.\n"); 
+}
+
+static void task_example2(void *ptr_task_struct) {
+	
+	console_printtext("example2 task.\n"); 
+}
+
 static void task_console_process(void *ptr_task_struct) {
 	static char stdin_buffer[STDINBUFFERSIZE];
 	static uint32_t bytes_in;
@@ -31,6 +41,8 @@ taskentry_t tasktable[] = {
 	/* Entry structure:
 	* short description, task function ptr, task period, periodcounter, task repetition, priority, task arg struct ptr 
 	*/
+	{"Example1.", task_example1, 5, 0, 0, TASKPRIORITYLEVEL_HIGH, NULL}, 
+	{"Example2.", task_example2, 5, 0, 0, TASKPRIORITYLEVEL_HIGH, NULL}, 
 	{"System idle.", task_idle, 5, 0, 0, TASKPRIORITYLEVEL_HIGH, NULL}, 
 	{"Process console.", task_console_process, 1, 0, -1, TASKPRIORITYLEVEL_LOW, NULL},
 	{0, 0, 0, 0, 0, 0, 0}

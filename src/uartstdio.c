@@ -296,8 +296,9 @@ UARTPrimeTransmit(uint32_t ui32Base)
         //
         while(MAP_UARTSpaceAvail(ui32Base) && !TX_BUFFER_EMPTY)
         {
-            MAP_UARTCharPutNonBlocking(ui32Base,
-                                      g_pcUARTTxBuffer[g_ui32UARTTxReadIndex]);
+            // MAP_UARTCharPutNonBlocking(ui32Base,
+            //                           g_pcUARTTxBuffer[g_ui32UARTTxReadIndex]);
+            MAP_UARTCharPut(ui32Base, g_pcUARTTxBuffer[g_ui32UARTTxReadIndex]);
             ADVANCE_TX_BUFFER_INDEX(g_ui32UARTTxReadIndex);
         }
 

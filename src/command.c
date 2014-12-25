@@ -27,19 +27,18 @@ static int command_help(int argc, char *argv[]) {
 	tCmdLineEntry *psEntry;
 
     UARTprintf("\nAvailable commands\n");
-    UARTprintf("------------------\n");
-    UARTprintf("Command \t Args\t Format \t Desription\n");
-    UARTprintf("------------------\n");
+    UARTprintf("-----------------------------------------------------------------------------\n");
+    UARTprintf("%10s %20s %10s %10s\n", "Command", "Args", "Format", "Description");
+    UARTprintf("-----------------------------------------------------------------------------\n");
 
     psEntry = &g_psCmdTable[0]; // Point at the beginning of the command table.
 
     while(psEntry->pcCmd) {
         // Print the command name and the brief description.
         // UARTprintf("%10s: %s\n", psEntry->pcCmd, psEntry->pcArgs, psEntry->pcFormat, psEntry->pcHelp);
-        UARTprintf("%s \t %s \t %s \t %s\n", psEntry->pcCmd, psEntry->pcArgs, psEntry->pcFormat, psEntry->pcHelp);
+        UARTprintf("%10s %20s %10s %10s\n", psEntry->pcCmd, psEntry->pcArgs, psEntry->pcFormat, psEntry->pcHelp);
         // Advance to the next entry in the table. 
         psEntry++;
-        ROM_SysCtlDelay(100000); // TODO: This is needed otherwise minicom outputs damaged text
     }
     
     UARTprintf("\n");
@@ -57,10 +56,10 @@ static int command_example1(int argc, char *argv[]) {
     
     if (!strcmp (argv[1], "forever")) {
         tasktable[0].taskrepetition = -1;
-        UARTprintf("task1 is on forever.\n");
+        UARTprintf("example1 task is on forever.\n");
     } else if (!strcmp (argv[1], "off")) {
         tasktable[0].taskrepetition = 0;
-        UARTprintf("task1 is off.\n");
+        UARTprintf("example1 task is off.\n");
     } else {
         if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: invalid input.\n");
@@ -79,11 +78,11 @@ static int command_example2(int argc, char *argv[]) {
     }
     
     if (!strcmp (argv[1], "on")) {
-        tasktable[0].taskrepetition = 10;
-        UARTprintf("task2 will be repeated 10 times.\n");
+        tasktable[1].taskrepetition = 10;
+        UARTprintf("example2 task will be repeated 10 times.\n");
     } else if (!strcmp (argv[1], "off")) {
-        tasktable[0].taskrepetition = 0;
-        UARTprintf("task2 is off.\n");
+        tasktable[1].taskrepetition = 0;
+        UARTprintf("example2 task is off.\n");
     } else {
         if (command_verbosity_level > VERBOSITY_NONE)
             UARTprintf("error: invalid input.\n");
@@ -107,11 +106,12 @@ static int command_example3(int argc, char *argv[]) {
     num = strtol(argv[1], &endptr, 16);
     if (*endptr != 0 || errno != 0) {
         if (command_verbosity_level > VERBOSITY_NONE)
-            UARTprintf("error: invalid input.\n");
+            UARTprintf("error: invalid input: %s\n", argv[1]);
         return (0);
     }       
 
     // TODO: num contains a valid value, now do something with it
+    UARTprintf("example3 command received.\n");
     return(0);
 }
 
@@ -161,13 +161,13 @@ void command_execute(char *commandline_received) {
 // Command table entries - fill it!
 tCmdLineEntry g_psCmdTable[] = {
 
-    { "ex1", "{'forever'/'off'}" , "-", command_example1, "Starts/stops a continuous task." },
-    { "ex2", "{'on'/'off'}" , "-", command_example2, "Starts/stops a task with 10 repetitions." },
+    { "ex1", "{'forever'/'off'}" , "ascii", command_example1, "Starts/stops a continuous task." },
+    { "ex2", "{'on'/'off'}" , "ascii", command_example2, "Starts/stops a task with 10 repetitions." },
     { "ex3", "{VALUE}" , "hex", command_example3, "Command with a hex value input." },
    
     { "help", "-" , "-", command_help,   "Display list of commands." }, 
     { "rep", "-" , "-",  command_report,   "Reports state variables." },
     { "rst", "-" , "-",  command_reset,   "Reset." },
-    { "verb", "{none/error/all}" , "-",  command_setverbosity, "Sets verbosity level." },
+    { "verb", "{none/error/all}" , "ascii",  command_setverbosity, "Sets verbosity level." },
     { 0, 0, 0, 0, 0} // Don't touch it, last entry must be a terminating NULL entry
 };

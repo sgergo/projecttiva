@@ -202,7 +202,7 @@ void board_systick_init(void) {
 
 void board_init(void) {
 	uint32_t clockfreq;
-	ROM_SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+	ROM_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
                        SYSCTL_XTAL_16MHZ);
 	
 	clockfreq = ROM_SysCtlClockGet();
