@@ -39,7 +39,6 @@ extern "C"
 #endif
 
 #define UART_BUFFERED // Enable UART buffered mode in uartstdio library
-#define UART_TX_BUFFER_SIZE 	128 // Override default UART buffer size in uartstdio library
 
 //*****************************************************************************
 //

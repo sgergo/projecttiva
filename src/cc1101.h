@@ -15,8 +15,8 @@
 #define RADIO_STATE_SLEEP			255
 typedef uint8_t radio_state_t;
 
-#define FIFO_STATE_TX_FULL_AS			0
-#define FIFO_STATE_TX_BELOW_DE			2
+#define FIFO_STATE_TX_FULL_ASSERT				0
+#define FIFO_STATE_TX_BELOW_DEASSERT			2
 
 typedef uint8_t fifo_state_t;
 

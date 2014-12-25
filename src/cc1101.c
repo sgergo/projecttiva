@@ -217,10 +217,10 @@ void cc1101_sendpacket(uint8_t *packet, uint8_t packetsize, uint8_t waitforclear
 		//TODO: what should be with the GDO0 ISR?
 		while (!quotient) {
 			cc1101_write_txfifo(packet, from, CC1101_FIFO_SIZE);
-			while (cc1101_state.fifo_state != FIFO_STATE_TX_FULL_AS)
+			while (cc1101_state.fifo_state != FIFO_STATE_TX_FULL_ASSERT)
 				;
 			cc1101_cmd(CC1101_STX);
-			while (cc1101_state.fifo_state != FIFO_STATE_TX_FULL_DE)
+			while (cc1101_state.fifo_state != FIFO_STATE_TX_BELOW_DEASSERT)
 				;
 
 			from += CC1101_FIFO_SIZE;
@@ -305,9 +305,9 @@ void cc1101_GDIO0_ISR(void) {
 
 void cc1101_GDIO2_ISR(void) {
 	switch (cc1101_state.fifo_state) {
-		case FIFO_STATE_ASSERT:
+		case FIFO_STATE_TX_FULL_ASSERT:
 			break;
-		case FIFO_STATE_DEASSERT:
+		case FIFO_STATE_TX_BELOW_DEASSERT:
 			break;
 		default:
 			break;
