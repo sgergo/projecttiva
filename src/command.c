@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "types.h"
+#include "constants.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,22 +21,23 @@
 
 extern taskentry_t tasktable[];
 level_t volatile command_verbosity_level;
+loglevel_t volatile loglevel;
 
 // Command 'help'
 static int command_help(int argc, char *argv[]) {
 	commandentry_t *entry;
 
     console_printtext("\nAvailable commands\n");
-    console_printtext("-----------------------------------------------------------------------------\n");
-    console_printtext("%10s %20s %10s %10s\n", "Command", "Args", "Format", "Description");
-    console_printtext("-----------------------------------------------------------------------------\n");
+    console_printtext("-------------------------------------------------------------------------------------------------\n");
+    console_printtext("%10s %40s %10s %10s\n", "Command", "Args", "Format", "Description");
+    console_printtext("-------------------------------------------------------------------------------------------------\n");
 
     entry = &commandtable[0]; // Point at the beginning of the command table.
 
     while(entry->commandname_ptr) {
 
         // Print the command name and the brief description.
-        console_printtext("%10s %20s %10s %10s\n", 
+        console_printtext("%10s %40s %10s %10s\n", 
             entry->commandname_ptr, 
             entry->commandarg_ptr, 
             entry->commandargformat_ptr, 
@@ -54,30 +56,27 @@ static int command_example1(int argc, char *argv[]) {
     defint_t taskid;
 
     if (argc < 2) {
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("error: missing argument.\n");
+        console_printlog(LOGTYPE_ERROR, "error: missing argument.\n");
         return (0);
     }
 
-    taskid = task_find_task_ID_by_infostring("example2");
+    taskid = task_find_task_ID_by_infostring("example1");
     if (taskid == -1) {
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("error: task entry error.\n");
+
+        console_printlog(LOGTYPE_ERROR, "error: task entry error.\n");
         return (0);
     }
     
-    if (!strcmp (argv[1], "forever")) {
-        tasktable[taskid].taskrepetition = -1;
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("example1 task is on forever.\n");
+    if (!strcmp (argv[1], "on")) {
+
+        tasktable[taskid].taskrepetition = TASKREPETITION_CONTINUOUS;
+        console_printlog(LOGTYPE_MESSAGE, "example1 task is continuously on.\n");
     } else if (!strcmp (argv[1], "off")) {
+
         tasktable[taskid].taskrepetition = 0;
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("example1 task is off.\n");
-    } else {
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("error: invalid input.\n");
-    }
+        console_printlog(LOGTYPE_MESSAGE, "example1 task is off.\n");
+    } else
+        console_printlog(LOGTYPE_ERROR, "error: invalid input.\n");
 
     return(0);
 }
@@ -87,29 +86,26 @@ static int command_example2(int argc, char *argv[]) {
     defint_t taskid;
 
     if (argc < 2) {
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("error: missing argument.\n");
+        console_printlog(LOGTYPE_ERROR, "error: missing argument.\n");
         return (0);
     }
 
     taskid = task_find_task_ID_by_infostring("example2");
     if (taskid == -1) {
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("error: task entry error.\n");
+        console_printlog(LOGTYPE_ERROR, "error: task entry error.\n");
         return (0);
     }
 
     if (!strcmp (argv[1], "on")) {
+
         tasktable[taskid].taskrepetition = 10;
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("example2 task will be repeated 10 times.\n");
+        console_printlog(LOGTYPE_MESSAGE, "example2 task will be repeated 10 times.\n");
     } else if (!strcmp (argv[1], "off")) {
+
         tasktable[taskid].taskrepetition = 0;
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("example2 task is off.\n");
+        console_printlog(LOGTYPE_MESSAGE, "example2 task is off.\n");
     } else {
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("error: invalid input.\n");
+        console_printlog(LOGTYPE_ERROR, "error: invalid input.\n");
     }
 
     return(0);
@@ -123,15 +119,13 @@ static int command_example3(int argc, char *argv[]) {
     static default_task_arg_t task_arg;
    
     if (argc < 2) {
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("error: missing value.\n");
+        console_printlog(LOGTYPE_ERROR, "error: missing value.\n");
         return (0);
     }
 
     taskid = task_find_task_ID_by_infostring("example3");
     if (taskid == -1) {
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("error: task entry error.\n");
+        console_printlog(LOGTYPE_ERROR, "error: task entry error.\n");
         return (0);
     }
 
@@ -139,14 +133,12 @@ static int command_example3(int argc, char *argv[]) {
     num = strtol(argv[1], &endptr, 16);
 
     if (*endptr != 0 || errno != 0) {
-        if (command_verbosity_level > VERBOSITY_NONE)
-            console_printtext("error: invalid input.\n");
-
+        console_printlog(LOGTYPE_ERROR, "error: invalid input.\n");
         return (0);
     }
 
     // TODO: num contains a valid value, now do something with it
-    console_printtext("example3 command received with value: 0x%02x\n", num);
+    console_printlog(LOGTYPE_MESSAGE, "example3 command received with value: 0x%02x\n", num);
     task_arg.uintval = num;
     tasktable[taskid].taskarg = &task_arg;
     tasktable[taskid].taskrepetition = 1;
@@ -169,18 +161,20 @@ static int command_reset(int argc, char *argv[]) {
 // Command 'verb'
 static int command_setverbosity(int argc, char *argv[]) {
     if (argc < 2) {
-        console_printtext("verbosity level: %d\n", command_verbosity_level);
+        console_printtext("verbosity level: %d\n", loglevel.byte);
         return (0);
     }
 
     if (!strcmp (argv[1], "none")) {
-        command_verbosity_level = VERBOSITY_NONE;
+        loglevel.byte = 0x00;
     } else if (!strcmp (argv[1],"error")) {
-        command_verbosity_level = VERBOSITY_ERROR;
+        loglevel.bits.error = 1;
+    } else if (!strcmp (argv[1],"message")) {
+        loglevel.bits.message = 1;
     } else if (!strcmp (argv[1],"all")) {
-        command_verbosity_level = VERBOSITY_ALL;
+        loglevel.byte = 0xff;
     } else {
-        console_printtext("error: invalid input.\n");
+        console_printlog(LOGTYPE_ERROR, "error: invalid input.\n");
         return (0);
     }
 
@@ -193,19 +187,19 @@ void command_execute(char *commandline_received) {
 
     // If CmdLineProcess returns with a non-zero value something went wrong
 	if (ret) 
-        console_printtext("Unknown command, error code: %d\n", ret); 
+        console_printlog(LOGTYPE_ERROR, "Unknown command, error code: %d\n", ret); 
 }
 
 // Command table entries - fill it!
 commandentry_t commandtable[] = {
 
-    { "ex1", "{'forever'/'off'}" , "ascii", command_example1, "Starts/stops a continuous task." },
-    { "ex2", "{'on'/'off'}" , "ascii", command_example2, "Starts/stops a task with 10 repetitions." },
+    { "ex1", "{on/off}" , "ascii", command_example1, "Starts/stops a continuous task." },
+    { "ex2", "{on/off}" , "ascii", command_example2, "Starts/stops a task with 10 repetitions." },
     { "ex3", "{VALUE}" , "hex", command_example3, "Execute a task with a hex value input." },
    
     { "help", "-" , "-", command_help,   "Display list of commands." }, 
     { "rep", "-" , "-",  command_report,   "Reports state variables." },
     { "rst", "-" , "-",  command_reset,   "Reset." },
-    { "verb", "{none/error/all}" , "ascii",  command_setverbosity, "Sets verbosity level." },
+    { "verb", "{none/error/message/all}" , "ascii",  command_setverbosity, "Sets verbosity level." },
     { 0, 0, 0, 0, 0} // Don't touch it, last entry must be a terminating NULL entry
 };

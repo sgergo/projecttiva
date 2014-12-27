@@ -1,12 +1,13 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-#define STDINBUFFERSIZE						128	// Static stdin buffer size in console_process function
-#define STDINDEFAULTCOMMANDSIZE				3   // Default length of a console command
-#define CONSOLE_DEFAULT_BAUDRATE			115200
+// #define STDINBUFFERSIZE						128	// Static stdin buffer size in console_process function
+// #define STDINDEFAULTCOMMANDSIZE				3   // Default length of a console command
+// #define CONSOLE_DEFAULT_BAUDRATE			115200
 
 void console_init(void);
 void console_printtext(const char *format , ...);
+void console_printlog(logtype_t logtype, const char *format , ...);
 void console_read_uart_available_bytes(char *stdin_buffer, uint32_t *bytes_in);
 //void console_process(void);
 

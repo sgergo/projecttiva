@@ -8,7 +8,7 @@ int main()
     board_init();
 
     while(1)
-        task_process();     
-
+        task_process();
+        
     return 0;
 }

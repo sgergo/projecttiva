@@ -5,7 +5,10 @@ typedef void (*taskfunc_t)(void*);
 
 #define TASKPRIORITYLEVEL_LOW 0
 #define TASKPRIORITYLEVEL_HIGH 1
-#define TASKREPETITION_INFINITE -1
+#define TASKREPETITION_CONTINUOUS -1
+
+#define EXITCRITICAL 0
+#define ENTERCRITICAL 1
 
 typedef struct {
 	char const *taskinfo;
@@ -19,6 +22,7 @@ typedef struct {
 
 void task_process(void);
 void task_systick(void);
-int32_t task_find_task_ID_by_infostring( char* taskstr);
+void task_watchdog_expired (void);
+defint_t task_find_task_ID_by_infostring( char* taskstr);
 
 #endif

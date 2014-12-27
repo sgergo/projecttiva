@@ -42,9 +42,10 @@ static void IntDefaultHandler(void);
 // External declarations for the interrupt handlers used by the application.
 //
 //*****************************************************************************
-extern void UARTStdioIntHandler(void);
-extern void board_systick_ISR(void);
+extern void uartstdio_isr(void);
+extern void board_systick_isr(void);
 extern void board_fault(void);
+extern void board_watchdog_isr(void);
 //*****************************************************************************
 //
 // The entry point for the application.
@@ -84,13 +85,13 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // Debug monitor handler
     0,                                      // Reserved
     IntDefaultHandler,                      // The PendSV handler
-    board_systick_ISR, //IntDefaultHandler,                      // The SysTick handler
+    board_systick_isr, //IntDefaultHandler,                      // The SysTick handler
     IntDefaultHandler,                      // GPIO Port A
     IntDefaultHandler,                      // GPIO Port B
     IntDefaultHandler,                      // GPIO Port C
     IntDefaultHandler,                      // GPIO Port D
     IntDefaultHandler,                      // GPIO Port E
-    UARTStdioIntHandler, //IntDefaultHandler                      // UART0 Rx and Tx
+    uartstdio_isr, //IntDefaultHandler                      // UART0 Rx and Tx
     IntDefaultHandler,                      // UART1 Rx and Tx
     IntDefaultHandler,                      // SSI0 Rx and Tx
     IntDefaultHandler,                      // I2C0 Master and Slave
@@ -103,7 +104,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // ADC Sequence 1
     IntDefaultHandler,                      // ADC Sequence 2
     IntDefaultHandler,                      // ADC Sequence 3
-    IntDefaultHandler,                      // Watchdog timer
+    board_watchdog_isr, //IntDefaultHandler,                      // Watchdog timer
     IntDefaultHandler,                      // Timer 0 subtimer A
     IntDefaultHandler,                      // Timer 0 subtimer B
     IntDefaultHandler,                      // Timer 1 subtimer A
