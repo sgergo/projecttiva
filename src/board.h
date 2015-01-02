@@ -1,3 +1,4 @@
+
 #ifndef BOARD_H
 #define BOARD_H
 
@@ -11,5 +12,6 @@ void board_delay_ms (uint32_t delay);
 void board_init(void);
 void board_toggle_led(led_t led);
 void board_blink_led(led_t led);
-
+void board_led_on(led_t led);
+void board_led_off(led_t led);
 #endif

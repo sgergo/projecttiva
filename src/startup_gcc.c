@@ -46,6 +46,9 @@ extern void uartstdio_isr(void);
 extern void board_systick_isr(void);
 extern void board_fault(void);
 extern void board_watchdog_isr(void);
+extern void board_gps_uart_isr(void);
+extern void gps_gpsppsout_isr(void);
+extern void gps_fixavailable_isr(void);
 //*****************************************************************************
 //
 // The entry point for the application.
@@ -87,12 +90,12 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // The PendSV handler
     board_systick_isr, //IntDefaultHandler,                      // The SysTick handler
     IntDefaultHandler,                      // GPIO Port A
-    IntDefaultHandler,                      // GPIO Port B
+    gps_gpsppsout_isr, //IntDefaultHandler,                      // GPIO Port B
     IntDefaultHandler,                      // GPIO Port C
     IntDefaultHandler,                      // GPIO Port D
-    IntDefaultHandler,                      // GPIO Port E
+    gps_fixavailable_isr, //IntDefaultHandler,                      // GPIO Port E
     uartstdio_isr, //IntDefaultHandler                      // UART0 Rx and Tx
-    IntDefaultHandler,                      // UART1 Rx and Tx
+    board_gps_uart_isr, //IntDefaultHandler,                      // UART1 Rx and Tx
     IntDefaultHandler,                      // SSI0 Rx and Tx
     IntDefaultHandler,                      // I2C0 Master and Slave
     IntDefaultHandler,                      // PWM Fault

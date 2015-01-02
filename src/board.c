@@ -21,6 +21,7 @@
 #include "console.h"
 #include "task.h"
 #include "board_watchdog.h"
+#include "gps.h"
 
 uint32_t delayloopspermicrosecond;
 uint32_t delayloopspermillisecond;
@@ -87,55 +88,49 @@ void board_blink_led(led_t led) {
 	board_delay_ms(LEDBLINKPERIODMS);
 }
 
+void board_led_on(led_t led) {
+	
+	switch (led) {
+		case RED:
+			ROM_GPIOPinWrite(LED_RED_PORTBASE, LED_RED, LED_RED);
+			break;
+
+		case BLUE:
+			ROM_GPIOPinWrite(LED_BLUE_PORTBASE, LED_BLUE, LED_BLUE);
+			break;
+
+		case GREEN:
+			ROM_GPIOPinWrite(LED_GREEN_PORTBASE, LED_GREEN, LED_GREEN);
+			break;
+		default:
+			break;
+	}
+}
+
+void board_led_off(led_t led) {
+	
+	switch (led) {
+		case RED:
+			ROM_GPIOPinWrite(LED_RED_PORTBASE, LED_RED, 0);
+			break;
+
+		case BLUE:
+			ROM_GPIOPinWrite(LED_BLUE_PORTBASE, LED_BLUE, 0);
+			break;
+
+		case GREEN:
+			ROM_GPIOPinWrite(LED_GREEN_PORTBASE, LED_GREEN, 0);
+			break;
+		default:
+			break;
+	}
+}
 void board_delay_us (uint32_t delay) {
 	ROM_SysCtlDelay(delayloopspermicrosecond * delay);
 }
 
 void board_delay_ms (uint32_t delay) {
 	ROM_SysCtlDelay(delayloopspermillisecond * delay);
-}
-
-void board_configure_gps_pins(void) {
-
-	ROM_SysCtlPeripheralEnable(GPSPPSOUTPINPERIPHERIAL);
-	ROM_GPIOPinTypeGPIOInput(GPSPPSOUTPINPERIPHERIALBASE, GPSPPSOUTPIN);
-	ROM_GPIOPadConfigSet(GPSPPSOUTPINPERIPHERIALBASE, GPSPPSOUTPIN, GPIO_STRENGTH_2MA, 
-		GPIO_PIN_TYPE_STD_WPU);
-	GPIOIntDisable(GPSPPSOUTPINPERIPHERIALBASE, GPIO0INTPIN);
-    GPIOIntClear(GPSPPSOUTPINPERIPHERIALBASE, GPIO0INTPIN);
-    ROM_GPIOIntTypeSet(GPSPPSOUTPINPERIPHERIALBASE, GPSPPSOUTPIN, GPIO_RISING_EDGE);
-    GPIOIntEnable(GPSPPSOUTPINPERIPHERIALBASE, GPIO0INTPIN);
-    IntEnable(GPIO0INT);
-
-	ROM_SysCtlPeripheralEnable(GPSPUSHTOFIXPINPERIPHERIAL);
-	ROM_GPIOPinTypeGPIOOutput(GPSPUSHTOFIXPINPERIPHERIALBASE, GPSPUSHTOFIXPIN);
-	ROM_GPIOPinWrite(GPSPUSHTOFIXPINPERIPHERIALBASE, GPSPUSHTOFIXPIN, 0); // Switch to sleep mode
-
-	ROM_SysCtlPeripheralEnable(GPSFIXAVAILABLEPINPERIPHERIAL);
-	ROM_GPIOPinTypeGPIOInput(GPSFIXAVAILABLEPINPERIPHERIALBASE, GPSFIXAVAILABLEPIN);
-	ROM_GPIOPadConfigSet(GPSFIXAVAILABLEPINPERIPHERIALBASE, GPSFIXAVAILABLEPIN, GPIO_STRENGTH_2MA, 
-		GPIO_PIN_TYPE_STD_WPU);
-
-	ROM_SysCtlPeripheralEnable(GPSRESETPINPERIPHERIAL);
-	ROM_GPIOPinTypeGPIOOutput(GPSRESETPINPERIPHERIALBASE, GPSRESETPIN);
-	ROM_GPIOPinWrite(GPSRESETPINPERIPHERIALBASE, GPSRESETPIN, 0); // Stay in reset
-}
-
-void board_pushtofix_on(void) {
-	ROM_GPIOPinWrite(GPSPUSHTOFIXPINPERIPHERIALBASE, GPSPUSHTOFIXPIN, 
-		GPSPUSHTOFIXPIN); // Switch to normal mode	
-}
-
-void board_pushtofix_off(void) {
-	ROM_GPIOPinWrite(GPSPUSHTOFIXPINPERIPHERIALBASE, GPSPUSHTOFIXPIN, 0); // Switch to sleep mode	
-}
-
-void board_gpsreset_assert(void) {
-	ROM_GPIOPinWrite(GPSRESETPINPERIPHERIALBASE, GPSRESETPIN, 0); // Stay in reset	
-}
-
-void board_gpsreset_deassert(void) {
-	ROM_GPIOPinWrite(GPSRESETPINPERIPHERIALBASE, GPSRESETPIN, GPSRESETPIN); // Exit reset	
 }
 
 void board_gpio0_edge_select(uint32_t edge) {
@@ -254,6 +249,7 @@ void board_init(void) {
 	board_spi_init();
 	board_systick_init();
 	board_watchdog_init();	
+	gps_init();
 	
 	clockfreq = ROM_SysCtlClockGet();
 	delayloopspermicrosecond = (ROM_SysCtlClockGet() / (uint32_t) 1e6) / 3;
@@ -266,6 +262,8 @@ void board_init(void) {
 		console_printtext("WARNING: System clock is below 3 MHz, board timing might be inaccurate!\n");
 	else 
 		console_printtext("\n");
+
+	
 	
 	ROM_IntMasterEnable();
 }

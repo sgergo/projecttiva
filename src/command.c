@@ -22,6 +22,7 @@
 extern taskentry_t tasktable[];
 level_t volatile command_verbosity_level;
 loglevel_t volatile loglevel;
+extern nmea_taskarg_t nmea_taskarg;
 
 // Command 'help'
 static int command_help(int argc, char *argv[]) {
@@ -116,7 +117,7 @@ static int command_example3(int argc, char *argv[]) {
     defint_t taskid;
     long num;
     char *endptr;
-    static default_task_arg_t task_arg;
+    static default_taskarg_t task_arg;
    
     if (argc < 2) {
         console_printlog(LOGTYPE_ERROR, "error: missing value.\n");
@@ -142,6 +143,66 @@ static int command_example3(int argc, char *argv[]) {
     task_arg.uintval = num;
     tasktable[taskid].taskarg = &task_arg;
     tasktable[taskid].taskrepetition = 1;
+    return(0);
+}
+
+static int command_gpsfix(int argc, char *argv[]) {
+    defint_t taskid;
+
+    if (argc < 2) {
+        console_printlog(LOGTYPE_ERROR, "error: missing argument.\n");
+        return (0);
+    }
+
+    taskid = task_find_task_ID_by_infostring("gpsfix");
+    if (taskid == -1) {
+
+        console_printlog(LOGTYPE_ERROR, "error: task entry error.\n");
+        return (0);
+    }
+
+    if (!strcmp (argv[1], "on")) {
+        nmea_taskarg.fixfilter = true;
+        tasktable[taskid].taskarg = &nmea_taskarg;
+        tasktable[taskid].taskrepetition = TASKREPETITION_CONTINUOUS;
+        console_printlog(LOGTYPE_MESSAGE, "GPS fix filter is on.\n");
+    } else if (!strcmp (argv[1], "off")) {
+        nmea_taskarg.fixfilter = false;
+        tasktable[taskid].taskrepetition = 0;
+        console_printlog(LOGTYPE_MESSAGE, "GPS fix filter is off.\n");
+    } else
+        console_printlog(LOGTYPE_ERROR, "error: invalid input.\n");
+
+    return(0);
+}
+
+static int command_nmea(int argc, char *argv[]) {
+    defint_t taskid;
+
+    if (argc < 2) {
+        console_printlog(LOGTYPE_ERROR, "error: missing argument.\n");
+        return (0);
+    }
+
+    taskid = task_find_task_ID_by_infostring("nmea_output");
+    if (taskid == -1) {
+
+        console_printlog(LOGTYPE_ERROR, "error: task entry error.\n");
+        return (0);
+    }
+
+    if (!strcmp (argv[1], "on")) {
+        
+        tasktable[taskid].taskarg = &nmea_taskarg;
+        tasktable[taskid].taskrepetition = TASKREPETITION_CONTINUOUS;
+        console_printlog(LOGTYPE_MESSAGE, "NMEA is now displayed.\n");
+    } else if (!strcmp (argv[1], "off")) {
+
+        tasktable[taskid].taskrepetition = 0;
+        console_printlog(LOGTYPE_MESSAGE, "NMEA is now switched off.\n");
+    } else
+        console_printlog(LOGTYPE_ERROR, "error: invalid input.\n");
+
     return(0);
 }
 
@@ -197,7 +258,9 @@ commandentry_t commandtable[] = {
     { "ex2", "{on/off}" , "ascii", command_example2, "Starts/stops a task with 10 repetitions." },
     { "ex3", "{VALUE}" , "hex", command_example3, "Execute a task with a hex value input." },
    
+    { "fix", "{on/off}" , "ascii", command_gpsfix,   "GPS fix filter on." },
     { "help", "-" , "-", command_help,   "Display list of commands." }, 
+    { "nmea", "-" , "-", command_nmea,   "Display NMEA sentences." },
     { "rep", "-" , "-",  command_report,   "Reports state variables." },
     { "rst", "-" , "-",  command_reset,   "Reset." },
     { "verb", "{none/error/message/all}" , "ascii",  command_setverbosity, "Sets verbosity level." },

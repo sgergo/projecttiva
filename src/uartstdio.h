@@ -8,7 +8,7 @@
 #endif
 
 #ifndef UART_TX_BUFFER_SIZE
-#define UART_TX_BUFFER_SIZE     1024
+#define UART_TX_BUFFER_SIZE     2048
 #endif
 
 extern void uartstdio_config(defuint_t port, defuint_t baud, defuint_t clockfreq);
