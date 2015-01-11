@@ -13,6 +13,7 @@ TIVAWARE_PATH=~/ti/tivaware
 
 #Build directory name
 OUTDIR = build
+<<<<<<< HEAD
 
 # Program name definition for ARM GNU C compiler.
 CC      = ${COMPILER}-gcc
@@ -71,6 +72,39 @@ LINKER_FILE = $(PART).ld
 
 SRC = $(shell find . -name '[!.]*.c' -not -path "./contrib/*")
 OBJS = $(addprefix $(OUTDIR)/,$(notdir $(SRC:.c=.o)))
+=======
+# TIVAWARE_PATH: path to tivaware folder
+#TIVAWARE_PATH = /home/gsantha/ti/tivaware
+TIVAWARE_PATH = $(shell test -d /home/gsantha/ti/tivaware && echo /home/gsantha/ti/tivaware || echo /home/sg/ti/tivaware )
+
+# LD_SCRIPT: linker script
+LD_SCRIPT = $(MCU).ld
+
+#
+# Get the location of libc.a from the GCC front-end.
+#
+LIBC:=${shell arm-none-eabi-gcc ${CFLAGS} -print-file-name=libc.a}
+
+# define flags
+# define flags
+COREFLAGS = -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+CFLAGS = -g $(COREFLAGS)
+CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall
+CFLAGS += -pedantic -DPART_$(MCU) -c -I$(TIVAWARE_PATH)
+CFLAGS += -DTARGET_IS_BLIZZARD_RA1
+LDFLAGS = $(COREFLAGS) -T$(LD_SCRIPT) -Wl,--entry=ResetISR,--gc-sections
+
+#######################################
+# end of user configuration
+#######################################
+#
+#######################################
+# binaries
+#######################################
+CC = arm-none-eabi-gcc
+LD = arm-none-eabi-gcc
+OBJCOPY = arm-none-eabi-objcopy
+>>>>>>> 4a9be38d3db3219f0ebb8fd2b303a6a652c9af7d
 RM      = rm -f
 MKDIR	= mkdir -p
 
