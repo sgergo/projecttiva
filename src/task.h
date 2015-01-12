@@ -3,26 +3,39 @@
 
 typedef void (*taskfunc_t)(void*);
 
-#define TASKPRIORITYLEVEL_LOW 0
-#define TASKPRIORITYLEVEL_HIGH 1
 #define TASKREPETITION_CONTINUOUS -1
+#define TASKREPETITION_HALT 0
+#define TASKREPETITION_ONCE 1
 
-#define EXITCRITICAL 0
-#define ENTERCRITICAL 1
+#define EXITCRITICAL false
+#define ENTERCRITICAL true
+
+typedef uint32_t tasklist_t;
 
 typedef struct {
-	char const *taskinfo;
+	char const *taskname;
 	taskfunc_t const taskfunction;
 	defuint_t volatile taskperiod;
 	defuint_t volatile periodcounter;
 	defint_t volatile taskrepetition;
-	level_t taskpriority;
 	void *taskarg;
 }taskentry_t;
 
+typedef struct {
+	tasklist_t volatile tasklist;
+	bool criticalsection;
+	bool taskisbusy;
+	defuint_t taskticked;
+}schedulerstate_t;
+
 void task_process(void);
 void task_systick(void);
-void task_watchdog_expired (void);
-defint_t task_find_task_ID_by_infostring( char* taskstr);
+void task_taskdog_expired (void);
+defint_t task_launchtask (char* taskname, defint_t repetition, void *arg);
+defint_t task_killtask (char* taskname);
+void task_addtask_by_index(defuint_t taskindex, defint_t repetition, void *arg);
+defint_t task_addtask_by_name(char* taskname, defint_t repetition, void *arg);
+void task_cleartask_by_index(defuint_t taskindex);
+defint_t task_cleartask_by_name(char* taskname);
 
 #endif

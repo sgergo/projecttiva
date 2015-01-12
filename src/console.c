@@ -20,7 +20,6 @@
 #include "uartstdio.h"
 #include "board.h"
 
-extern uint8_t volatile command_verbosity_level;
 extern loglevel_t volatile loglevel;
 
 void console_read_uart_available_bytes(char *stdin_buffer, uint32_t *bytes_in) {	
@@ -45,7 +44,6 @@ static void console_uart_init(uint32_t baudrate) {
 
 void console_init(void) {
 	console_uart_init(CONSOLE_DEFAULT_BAUDRATE);
-	command_verbosity_level = VERBOSITY_ALL; // Set default verbosity: we want to see all replies and error messages 
 
 	// Set default log level (log all)
 	loglevel.byte = 0xff;
@@ -65,7 +63,7 @@ void console_printlog(logtype_t logtype, const char *format , ...) {
 	mask = logtype & loglevel.byte;
 
 	if (!loglevel.byte || !mask) 
-		return; // Loglevel forbids to print
+		return; // Loglevel forbids to print anything
 
 	va_list arglist;
  	va_start( arglist, format );

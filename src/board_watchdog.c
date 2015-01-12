@@ -41,7 +41,7 @@ void board_watchdog_stop(void) {
 void board_watchdog_isr(void) {
 
 	ROM_WatchdogIntClear(WATCHDOGBASE);
-	task_watchdog_expired ();
+	task_taskdog_expired ();
 }
 void board_watchdog_init(void) {
 

@@ -21,6 +21,7 @@
 #include "console.h"
 #include "task.h"
 #include "board_watchdog.h"
+#include "timer_example.h"
 
 uint32_t delayloopspermicrosecond;
 uint32_t delayloopspermillisecond;
@@ -211,6 +212,7 @@ void board_init(void) {
 	board_spi_init();
 	board_systick_init();
 	board_watchdog_init();	
+	timer_example_timer_init();	
 	
 	clockfreq = ROM_SysCtlClockGet();
 	delayloopspermicrosecond = (ROM_SysCtlClockGet() / (uint32_t) 1e6) / 3;
