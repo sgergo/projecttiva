@@ -79,38 +79,40 @@ Then build lm4flash and run it:
     make
     lm4flash /path/to/executable.bin
 
-(If you need libusb: sudo apt-get install libusb-1.0-0-dev)
+If you need libusb: 
+    sudo apt-get install libusb-1.0-0-dev
 
-Copy lm4tools into /opt: sudo cp -avr lm4tools /opt
-Add to PATH: PATH=$PATH:/opt/lm4tools/lm4flash
+
+Copy lm4tools into /opt: `sudo cp -avr lm4tools /opt`
+Add to PATH: `PATH=$PATH:/opt/lm4tools/lm4flash`
 
 Plug TI launchpad while monitoring the process:
 
-tail -f /var/log/syslog
+    tail -f /var/log/syslog
 
 *Write idVendor/idProduct values on a notepad.
 
 (you may stop modem manager: sudo stop modemmanager)
 
-Use 'lm4flash main.bin' commandto program your board with main.bin. It may complain:
+Use `lm4flash main.bin` command to program your board with main.bin. It may complain:
 
-sg@sg-sajat:~/__WORK__/tivac/tiva-template/build$ lm4flash main.bin
-Unable to open USB device: LIBUSB_ERROR_ACCESS
-Unable to find any ICDI devices
+    sg@sg-sajat:~/__WORK__/tivac/tiva-template/build$ lm4flash main.bin
+    Unable to open USB device: LIBUSB_ERROR_ACCESS
+    Unable to find any ICDI devices
 
 That is, you have no access to the device. You need to create a rule:
 
-sudo gedit 30-tivac.rules
+    sudo gedit 30-tivac.rules
 
-Add this to the empty file (you need to replace idVendor/idProduct with your ones):
+Add this to the empty file (you need to replace idVendor/idProduct with your own ones):
 
-KERNEL=="ttyACM[0-9]*",ATTRS{idVendor}=="1cbe",ATTRS{idProduct}=="00fd",MODE:="0666"
+    KERNEL=="ttyACM[0-9]*",ATTRS{idVendor}=="1cbe",ATTRS{idProduct}=="00fd",MODE:="0666"
 
-Execute 'udevadm trigger'. Unplug-replug your board.
+Execute `udevadm trigger`. Unplug-replug your board.
 
-sg@sg-sajat:~/__WORK__/tivac/tiva-template/build$ lm4flash main.bin
-Found ICDI device with serial: 0E200FBE
-ICDI version: 9270
+    sg@sg-sajat:~/__WORK__/tivac/tiva-template/build$ lm4flash main.bin
+    Found ICDI device with serial: 0E200FBE
+    ICDI version: 9270
 
 ## Debugging with gdb
 
