@@ -80,7 +80,7 @@ Then build lm4flash and run it:
     lm4flash /path/to/executable.bin
 
 If you need libusb: 
-    sudo apt-get install libusb-1.0-0-dev
+    `sudo apt-get install libusb-1.0-0-dev`
 
 
 Copy lm4tools into /opt: `sudo cp -avr lm4tools /opt`
@@ -92,7 +92,7 @@ Plug TI launchpad while monitoring the process:
 
 *Write idVendor/idProduct values on a notepad.
 
-(you may stop modem manager: sudo stop modemmanager)
+(you may stop modem manager: `sudo stop modemmanager`)
 
 Use `lm4flash main.bin` command to program your board with main.bin. It may complain:
 
