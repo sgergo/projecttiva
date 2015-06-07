@@ -29,11 +29,9 @@ You will need an ARM bare-metal toolchain to build code for Tiva targets.
 You can get a toolchain from the
 [gcc-arm-embedded](https://launchpad.net/gcc-arm-embedded) project that is
 pre-built for your platform. Extract the package and add the `bin` folder to
-your PATH.
-//saját példa
-PATH=$PATH:/opt/gcc-arm-none-eabi-4_8-2014q3/bin
+your PATH. PATH=$PATH:/opt/gcc-arm-none-eabi-4_8-2014q3/bin
 
-64 bites környezetben ezekre is szükség lesz:
+If using 64 bit OS:
 
 sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0
 
@@ -46,9 +44,6 @@ then run `make` to build TivaWare.
     cd tivaware
     unzip SW-TM4C-1.1.exe
     make
-
-//saját példa
-/home/sg/ti/tivaware
 
 Note: for the Tiva Connected Launchpad get [SW-EK-TM4C1294XL-2.1.0.12573.exe](http://www.ti.com/tool/sw-ek-tm4c1294xl).
 
@@ -84,33 +79,34 @@ Then build lm4flash and run it:
     make
     lm4flash /path/to/executable.bin
 
-//saját példa
-Kellhet hozzá a libusb: sudo apt-get install libusb-1.0-0-dev
-Utána érdemes átpakolni az opt-ba az egészet: sudo cp -avr lm4tools /opt
-Majd hozzáadni az lm4flash elérését a PATH-hoz: PATH=$PATH:/opt/lm4tools/lm4flash
+(If you need libusb: sudo apt-get install libusb-1.0-0-dev)
 
-Utána lehet bedugni a Tiva LP-t. Előtte érdemes elküldeni ezt, ezzel monitorozható a csatlakoztatás/kihúzás folyamata:
+Copy lm4tools into /opt: sudo cp -avr lm4tools /opt
+Add to PATH: PATH=$PATH:/opt/lm4tools/lm4flash
+
+Plug TI launchpad while monitoring the process:
 
 tail -f /var/log/syslog
 
-(itt még bejöhet a képbe a modemmanager, én leállítottam: sudo stop modemmanager)
+*Write idVendor/idProduct values on a notepad.
 
-lm4flash main.bin parancs használható a felprogramozáshoz, ahol a main.bin a lefordított bináris állomány. Várhatóan hibaüzit ad:
+(you may stop modem manager: sudo stop modemmanager)
+
+Use 'lm4flash main.bin' commandto program your board with main.bin. It may complain:
 
 sg@sg-sajat:~/__WORK__/tivac/tiva-template/build$ lm4flash main.bin
 Unable to open USB device: LIBUSB_ERROR_ACCESS
 Unable to find any ICDI devices
 
-Ez azért van, mert nincs hozzáférésünk a csatlakoztatott boardhoz. Udev rule-t kell készíteni az /etc/udev/rules.d/ könyvtárba rootként:
+That is, you have no access to the device. You need to create a rule:
 
 sudo gedit 30-tivac.rules
 
-Ezzel létrejön egy üres rule file. Ebbe pedig ezt kell bemásolni:
+Add this to the empty file (you need to replace idVendor/idProduct with your ones):
 
-SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",ATTRS{idVendor}=="1cbe",ATTRS{idProduct}=="00fd",MODE:="0666"
-KERNEL=="ttyACM[0-9]*",MODE:="0666"
+KERNEL=="ttyACM[0-9]*",ATTRS{idVendor}=="1cbe",ATTRS{idProduct}=="00fd",MODE:="0666"
 
-Save majd kilép a geditből,kihúz, bedug board. Újbóli programozáskor már működniee kell:
+Execute 'udevadm trigger'. Unplug-replug your board.
 
 sg@sg-sajat:~/__WORK__/tivac/tiva-template/build$ lm4flash main.bin
 Found ICDI device with serial: 0E200FBE
