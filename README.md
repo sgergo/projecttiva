@@ -58,7 +58,7 @@ Note: for the Tiva Connected Launchpad get [SW-EK-TM4C1294XL-2.1.0.12573.exe](ht
    [tiva-template](https://github.com/uctools/tiva-template)
    repository (or fork it and clone your own repository).
 
-	git clone git@github.com:uctools/tiva-template
+  git clone git@github.com:uctools/tiva-template
 
 2. Modify the Makefile:
     * Set TARGET to the desired name of the output file (eg: TARGET = main)
