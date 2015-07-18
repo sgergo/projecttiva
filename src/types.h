@@ -1,6 +1,7 @@
 #ifndef TYPES_H
-#define TYPES_
+#define TYPES_H
 
+#include <stdint.h>
 
 typedef uint8_t flag_t;
 typedef uint8_t level_t;
@@ -15,7 +16,8 @@ typedef uint8_t logtype_t;
 typedef struct {
 	uint8_t error:1;
 	uint8_t message:1;
-	uint8_t dummy:6;
+	uint8_t lofasz_esti_fenyben:1;
+	uint8_t dummy:5;
 }logswitch_t;
 
 typedef union {
