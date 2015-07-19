@@ -87,9 +87,9 @@ $(OUTDIR)/%.o: src/%.c | $(OUTDIR)
 	$(CC) -c $(CFLAGS) ${<} -o ${@}
 
 $(OUTDIR)/${PROJECT_NAME}.axf: $(OBJS)
-	@echo
-	@echo Making driverlib
-	$(MAKE) -C ${TIVAWARE_PATH}/driverlib/
+#	@echo
+#	@echo Making driverlib
+#	$(MAKE) -C ${TIVAWARE_PATH}/driverlib/
 	@echo
 	@echo -e $(BLUE)Linking...$(NC)
 	$(LD) -T $(LINKER_FILE) $(LFLAGS) -o $(OUTDIR)/${PROJECT_NAME}.axf $(OBJS) ${TIVAWARE_PATH}/driverlib/gcc/libdriver.a $(LIBM_PATH) $(LIBC_PATH) $(LIB_GCC_PATH)
